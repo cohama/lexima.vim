@@ -1,4 +1,4 @@
 .bundle
 mysession.vim
 Gemfile.lock
-vendor/bundle
+test/vendor/bundle
