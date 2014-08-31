@@ -5,16 +5,20 @@ let s:V = vital#of('lexima')
 let s:L = s:V.import('Data.List')
 
 let g:lexima#rules = [
-\ {'char': '(', 'inputAfter': ')'},
+\ {'char': '(', 'input_after': ')'},
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
-\ {'char': '{', 'inputAfter': '}'},
+\ {'char': '{', 'input_after': '}'},
+\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 1, 'input': '<CR>}'},
 \ {'char': '}', 'at': '\%#}', 'leave': 1},
-\ {'char': '[', 'inputAfter': ']'},
+\ {'char': '[', 'input_after': ']'},
 \ {'char': ']', 'at': '\%#]', 'leave': 1},
-\ {'char': '"', 'inputAfter': '"'},
+\ {'char': '"', 'input_after': '"'},
 \ {'char': '"', 'at': '\%#"', 'leave': 1},
-\ {'char': "'", 'inputAfter': "'"},
+\ {'char': "'", 'input_after': "'"},
 \ {'char': "'", 'at': '\%#''', 'leave': 1},
+\ {'char': "%", 'at': '<\%#', 'input_after': '%>'},
+\ {'char': "%", 'at': '\%#%>', 'input': '%>', 'leave': 1},
+\ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ ]
 
 let s:lexima_rules = []
@@ -23,9 +27,17 @@ let s:leximastack = []
 function! lexima#init()
   let s:lexima_rules = sort(deepcopy(g:lexima#rules), function('s:rule_priority_order'))
   for rule in s:L.uniq_by(s:lexima_rules, 'v:val.char')
-    execute printf("inoremap %s \<C-r>=<SID>leximap(%s)\<CR>", rule.char, string(rule.char))
+    execute printf("inoremap %s \<C-r>=<SID>leximap('%s')\<CR>", rule.char, substitute(s:map_char(rule.char), "'", "''", 'g'))
   endfor
   inoremap <Esc> <C-r>=<SID>escape()<CR><Esc>
+endfunction
+
+function! s:map_char(char)
+  return substitute(a:char, '<', '<LT>', 'g')
+endfunction
+
+function! s:special_char(char)
+  return substitute(a:char, '<\([A-Za-z\-]\+\)>', '\=eval(''"\<'' . submatch(1) . ''>"'')', 'g')
 endfunction
 
 function! s:rule_priority_order(r1, r2)
@@ -37,14 +49,13 @@ endfunction
 function! s:leximap(char)
   let rule = s:find_rule(a:char)
   if rule == {}
-    return a:char
+    return s:special_char(a:char)
   elseif get(rule, 'leave', 0)
-    return s:leave(rule.char, rule.at)
+    return s:leave(s:special_char(get(rule, 'input', rule.char)), rule.at)
   else
-    return get(rule, 'input', rule.char) . s:input(rule.inputAfter)
+    return s:special_char(get(rule, 'input', rule.char)) . s:input(s:special_char(get(rule, 'input_after', '')))
   endif
 endfunction
-
 
 function! s:find_rule(char)
   for rule in s:lexima_rules
@@ -63,33 +74,94 @@ function! s:find_rule(char)
   return {}
 endfunction
 
-function! s:input(input)
+function! s:input(input_after)
   let curline = getline('.')
   let col = col('.')
-  call setline('.', curline[0:col-2] . a:input . curline[col-1:-1])
-  call add(s:leximastack, [a:input, col])
+  let inputs = split(a:input_after, "\r", 1)
+  let inputs[0] = curline[0:col-2] . inputs[0]
+  let inputs[-1] = inputs[-1] . curline[col-1:-1]
+  call setline('.', inputs[0])
+  let [bufnum, lnum, _, off] = getpos('.')
+  for i in range(1, len(inputs)-1)
+    call append(lnum+i-1, inputs[i])
+    call setpos('.', [bufnum, lnum+i, col, off])
+    if &indentexpr ==# ''
+      if &smartindent || &cindent
+        let indent_depth = cindent(lnum+i)
+      elseif &autoindent
+        let indent_depth = indent(lnum)
+      else
+        let indent_depth = 0
+      endif
+    else
+      execute 'let indent_depth = ' . &indentexpr
+    endif
+    call setline(lnum+i, repeat(' ', indent_depth) . getline(lnum+i))
+  endfor
+  call setpos('.', [bufnum, lnum, col, off])
+  call add(s:leximastack, [a:input_after, col])
   return ''
 endfunction
 
 function! s:leave(input, at)
+  if empty(s:leximastack)
+    return a:input
+  endif
+  let len = len(a:input)
+  let will_leave = join(map(reverse(s:leximastack[(-len):-1]), 'v:val[0]'), '')
   let endpos = searchpos(a:at, 'bcWn')
   if endpos != [0, 0]
-    let curline = getline('.')
-    let col = endpos[1]
-    call setline('.', curline[0:col-2] . curline[(col):-1])
+    call s:leave_impl(a:input)
     call remove(s:leximastack, -1)
   endif
   return a:input
 endfunction
 
+function! s:leave_impl(input)
+  let col = col('.')
+  let cr_count = len(split(a:input, "\r", 1)) - 1
+  let will_input = substitute(a:input, "\r", '\\n\\s*', 'g')
+  let illegal = search('\%#' . will_input) ==# 0
+  if illegal
+    return 0
+  endif
+  let [bufnum, lnum, _, off] = getpos('.')
+  for i in range(1, cr_count)
+    call setline(lnum+i, substitute(getline(lnum+i), '^\s*', '', ''))
+  endfor
+  if cr_count !=# 0
+    execute 'join! ' . (cr_count + 1)
+  endif
+  call setpos('.', [bufnum, lnum, col, off])
+  let curline = getline('.')
+  let len = len(a:input) - cr_count
+  if col ==# 1
+    let precursor = ''
+  else
+    let precursor = curline[0:col-2]
+  endif
+  let endcol = col('$') - len
+  if col ==# endcol
+    let postcursor = ''
+  else
+    let postcursor = curline[(col-1+len):-1]
+  endif
+  call setline('.', precursor . postcursor)
+  return 1
+endfunction
+
 function! s:escape()
   let curline = getline('.')
   let col = col('.')
-  if !empty(s:leximastack)
-    let ret = join(reverse(map(s:leximastack, 'v:val[0]')), '')
-    call setline('.', curline[0:col-2] . curline[(col-1 + len(ret)):-1])
-  else
+  if empty(s:leximastack)
     let ret = ''
+  else
+    let remaining = join(reverse(map(s:leximastack, 'v:val[0]')), '')
+    if s:leave_impl(remaining)
+      let ret = remaining
+    else
+      let ret = ''
+    endif
   endif
   let s:leximastack = []
   return ret

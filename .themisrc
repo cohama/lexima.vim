@@ -1,0 +1,19 @@
+let s:expect = themis#helper('expect')
+
+filetype plugin indent on
+
+function! Expect(v)
+  return s:expect(a:v)
+endfunction
+
+function! Visible(s)
+  let s = substitute(a:s, ' ', '_', 'g')
+  let s = substitute(s, '\t', '>---', 'g')
+  return s
+endfunction
+
+call themis#helper#expect#define_matcher('to_be_displayed', '
+\ getline(1, "$") ==# (type(a:1) ==# type([]) ? a:1 : [a:1])
+\ ', '
+\ "Expected is \n" . Visible(join(a:1, "\n")) . "\nbut actual is\n" . Visible(join(getline(1, "$"), "\n"))
+\ ')

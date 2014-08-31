@@ -8,4 +8,4 @@ WIP
 
 Screen Shots
 -----------
-![Screen Shot](http://i.gyazo.com/65eb9e8cc9c041cb4b3670c67c2e8642.gif)
+![Screen Shot](http://i.gyazo.com/af2d7a59c82f93e49a6fd424dbbf6f88.gif)
