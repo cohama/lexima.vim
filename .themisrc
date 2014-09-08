@@ -17,3 +17,35 @@ call themis#helper#expect#define_matcher('to_be_displayed', '
 \ ', '
 \ "Expected is \n" . Visible(join(a:1, "\n")) . "\nbut actual is\n" . Visible(join(getline(1, "$"), "\n"))
 \ ')
+
+function! s:contains(dict, dict2)
+  for key in keys(a:dict2)
+    if !has_key(a:dict, key) || (type(a:dict[key]) ==# type(a:dict2[key]) ? a:dict[key] !=# a:dict2[key] : a:dict[key] !=# [a:dict2[key]])
+      return 0
+    endif
+  endfor
+  return 1
+endfunction
+
+function! ToBeOrderedAs(rule, rule_order_list)
+  for i in range(len(a:rule))
+    if !s:contains(a:rule[i], a:rule_order_list[i])
+      return 0
+    endif
+  endfor
+  return 1
+endfunction
+
+function! ErrorMsgOnToBeOrderedAs(_1, _2, rule, rule_order_list)
+  let results = []
+  for i in range(min([len(a:rule), len(a:rule_order_list)]))
+    if s:contains(a:rule[i], a:rule_order_list[i])
+      call add(results, 1)
+    else
+      call add(results, 0)
+    endif
+  endfor
+  return printf("Expected\n%s\nto be orderd as\n%s\norder matches: %s", string(a:rule), string(a:rule_order_list), string(results))
+endfunction
+
+call themis#helper#expect#define_matcher('to_be_ordered_as', function('ToBeOrderedAs'), function('ErrorMsgOnToBeOrderedAs'))

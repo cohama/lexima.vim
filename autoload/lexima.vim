@@ -6,16 +6,21 @@ let s:L = s:V.import('Data.List')
 let s:S = s:V.import('Data.String')
 
 let s:lexima_vital = {
-\ 'V' : s:V,
 \ 'L' : s:L,
 \ 'S' : s:S
 \ }
 
-function! lexima#vital()
-  return s:lexima_vital
-endfunction
+let s:default_rule = {
+\ 'at': '\%#',
+\ 'leave': 0,
+\ 'filetype': [],
+\ 'syntax': [],
+\ 'mode': 'i'
+\ }
 
-let g:lexima#rules = [
+let s:lexima_mapped_chars = []
+
+let g:lexima#default_rules = [
 \ {'char': '(', 'input_after': ')'},
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
 \ {'char': '{', 'input_after': '}'},
@@ -32,53 +37,83 @@ let g:lexima#rules = [
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ ]
 
-let s:lexima_rules = []
-let s:input_stack = lexima#charstack#new()
-
-function! GetInputStack()
-  return s:input_stack
+function! lexima#vital()
+  return s:lexima_vital
 endfunction
 
 function! lexima#init()
-  let s:lexima_rules = sort(deepcopy(g:lexima#rules), function('s:rule_priority_order'))
-  for rule in s:L.uniq_by(s:lexima_rules, 'v:val.char')
-    execute printf("inoremap %s \<C-r>=<SID>leximap('%s')\<CR>", rule.char, substitute(s:map_char(rule.char), "'", "''", 'g'))
+  let s:input_stack = lexima#charstack#new()
+  let s:lexima_mapped_chars = []
+  let default_rules = g:lexima_no_default_rules ? [] : map(deepcopy(g:lexima#default_rules), 's:regularize(v:val)')
+  let s:lexima_rules = lexima#sortedlist#new(default_rules, function('lexima#_priority_order'))
+  for rule in default_rules
+    call s:define_map(rule.char)
   endfor
-  inoremap <Esc> <C-r>=<SID>escape()<CR><Esc>
+endfunction
+
+function! lexima#clear_rules()
+  for c in s:lexima_mapped_chars
+    execute "iunmap " . c
+  endfor
+  let s:lexima_mapped_chars = []
+  call s:lexima_rules.clear()
+endfunction
+
+function! lexima#add_rule(rule)
+  let rule = s:regularize(a:rule)
+  call s:lexima_rules.add(rule)
+  call s:define_map(rule.char)
+endfunction
+
+function! lexima#escape()
+  let curline = getline('.')
+  let col = col('.')
+  if s:input_stack.is_empty()
+    let ret = ''
+  else
+    let remaining = s:input_stack.pop_all()
+    if s:leave_impl(remaining)
+      let ret = remaining
+    else
+      let ret = ''
+    endif
+  endif
+  return ret
 endfunction
 
 function! s:map_char(char)
   return substitute(a:char, '<', '<LT>', 'g')
 endfunction
 
-function! s:special_char(char)
-  return substitute(a:char, '<\([A-Za-z\-]\+\)>', '\=eval(''"\<'' . submatch(1) . ''>"'')', 'g')
+function! s:define_map(c)
+  if index(s:lexima_mapped_chars, a:c) ==# -1
+    execute printf("inoremap %s \<C-r>=<SID>leximap('%s')\<CR>", a:c, substitute(s:map_char(a:c), "'", "''", 'g'))
+    call add(s:lexima_mapped_chars, a:c)
+  endif
 endfunction
 
-function! s:rule_priority_order(r1, r2)
-  let l1 = len(get(a:r1, 'at', ''))
-  let l2 = len(get(a:r2, 'at', ''))
-  return l1 ==# l2 ? 0 : (l2 ># l1 ? 1 : -1)
+function! s:special_char(char)
+  return substitute(a:char, '<\([A-Za-z\-]\+\)>', '\=eval(''"\<'' . submatch(1) . ''>"'')', 'g')
 endfunction
 
 function! s:leximap(char)
   let rule = s:find_rule(a:char)
   if rule == {}
     return s:special_char(a:char)
-  elseif get(rule, 'leave', 0)
+  elseif rule.leave
     return s:leave(s:special_char(a:char), s:special_char(get(rule, 'input', rule.char)), rule.at)
   else
-    return s:special_char(get(rule, 'input', rule.char)) . s:input(s:special_char(get(rule, 'input_after', '')))
+    return s:input(s:special_char(get(rule, 'input', rule.char)), s:special_char(get(rule, 'input_after', '')))
   endif
 endfunction
 
 function! s:find_rule(char)
-  for rule in s:lexima_rules
+  for rule in s:lexima_rules.as_list()
     if rule.char !=# a:char
       continue
     endif
 
-    let endpos = searchpos(get(rule, 'at', '\%#'), 'bcWn')
+    let endpos = searchpos(rule.at, 'bcWn')
 
     if endpos ==# [0, 0]
       continue
@@ -89,14 +124,13 @@ function! s:find_rule(char)
   return {}
 endfunction
 
-function! s:input(input_after)
+function! s:input(input, input_after)
   let curline = getline('.')
-  let col = col('.')
+  let [bufnum, lnum, col, off] = getpos('.')
   let inputs = split(a:input_after, "\r", 1)
   let inputs[0] = curline[0:col-2] . inputs[0]
   let inputs[-1] = inputs[-1] . curline[col-1:-1]
   call setline('.', inputs[0])
-  let [bufnum, lnum, _, off] = getpos('.')
   for i in range(1, len(inputs)-1)
     call append(lnum+i-1, inputs[i])
     call setpos('.', [bufnum, lnum+i, col, off])
@@ -109,13 +143,14 @@ function! s:input(input_after)
         let indent_depth = 0
       endif
     else
-      execute 'let indent_depth = ' . &indentexpr
+      let indent_depth = eval(&indentexpr)
     endif
+    " TODO: in case of 'noexpandtab'
     call setline(lnum+i, repeat(' ', indent_depth) . getline(lnum+i))
   endfor
   call setpos('.', [bufnum, lnum, col, off])
   call s:input_stack.push(a:input_after)
-  return ''
+  return a:input
 endfunction
 
 function! s:leave_impl(input)
@@ -165,21 +200,59 @@ function! s:leave(fallback, input, at)
   return a:fallback
 endfunction
 
-function! s:escape()
-  let curline = getline('.')
-  let col = col('.')
-  if s:input_stack.is_empty()
-    let ret = ''
+function! s:regularize(rule)
+  let reg_rule = extend(deepcopy(a:rule), s:default_rule, 'keep')
+  if type(reg_rule.filetype) !=# type([])
+    let reg_rule.filetype = [reg_rule.filetype]
+  endif
+  if type(reg_rule.syntax) !=# type([])
+    let reg_rule.syntax = [reg_rule.syntax]
+  endif
+  return reg_rule
+endfunction
+
+function! lexima#_priority_order(rule1, rule2)
+  let ft1 = !empty(a:rule1.filetype)
+  let ft2 = !empty(a:rule2.filetype)
+  if ft1 && !ft2
+    return 1
+  elseif ft2 && !ft1
+    return -1
   else
-    echomsg string(s:input_stack)
-    let remaining = s:input_stack.pop_all()
-    if s:leave_impl(remaining)
-      let ret = remaining
+    let syn1 = !empty(a:rule1.syntax)
+    let syn2 = !empty(a:rule2.syntax)
+    if syn1 && !syn2
+      return 1
+    elseif syn2 && !syn1
+      return -1
     else
-      let ret = ''
+      let pri1 = get(a:rule1, 'priority', 0)
+      let pri2 = get(a:rule2, 'priority', 0)
+      if pri1 > pri2
+        return 1
+      elseif pri1 < pri2
+        return -1
+      else
+        let atlen1 = len(a:rule1.at)
+        let atlen2 = len(a:rule2.at)
+        if atlen1 > atlen2
+          return 1
+        elseif atlen1 < atlen2
+          return -1
+        else
+          return 0
+        endif
+      endif
     endif
   endif
-  return ret
+endfunction
+
+function! lexima#get_rules()
+  if exists('s:lexima_rules')
+    return s:lexima_rules.as_list()
+  else
+    return []
+  endif
 endfunction
 
 let &cpo = s:save_cpo

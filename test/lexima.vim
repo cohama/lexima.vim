@@ -88,4 +88,15 @@ function! s:suite.__defaults__()
     call Expect(['HOGE("FUGA")']).to_be_displayed()
   endfunction
 
+  function
+
+endfunction
+
+function! s:suite.__filetype_rules__()
+  let ft_rules = themis#suite('filetype rules')
+
+  function! ft_rules.before_each()
+    
+  endfunction
+
 endfunction
