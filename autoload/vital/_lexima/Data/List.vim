@@ -278,6 +278,54 @@ function! s:find(list, default, f)
   return a:default
 endfunction
 
+" Returns the index of the first element which satisfies the given expr.
+function! s:find_index(xs, f, ...)
+  let len = len(a:xs)
+  let start = a:0 > 0 ? (a:1 < 0 ? len + a:1 : a:1) : 0
+  let default = a:0 > 1 ? a:2 : -1
+  if start >=# len || start < 0
+    return default
+  endif
+  for i in range(start, len - 1)
+    if eval(substitute(a:f, 'v:val', string(a:xs[i]), 'g'))
+      return i
+    endif
+  endfor
+  return default
+endfunction
+
+" Returns the index of the last element which satisfies the given expr.
+function! s:find_last_index(xs, f, ...)
+  let len = len(a:xs)
+  let start = a:0 > 0 ? (a:1 < 0 ? len + a:1 : a:1) : len - 1
+  let default = a:0 > 1 ? a:2 : -1
+  if start >=# len || start < 0
+    return default
+  endif
+  for i in range(start, 0, -1)
+    if eval(substitute(a:f, 'v:val', string(a:xs[i]), 'g'))
+      return i
+    endif
+  endfor
+  return default
+endfunction
+
+" Similar to find_index but returns the list of indices satisfying the given expr.
+function! s:find_indices(xs, f, ...)
+  let len = len(a:xs)
+  let start = a:0 > 0 ? (a:1 < 0 ? len + a:1 : a:1) : 0
+  let result = []
+  if start >=# len || start < 0
+    return result
+  endif
+  for i in range(start, len - 1)
+    if eval(substitute(a:f, 'v:val', string(a:xs[i]), 'g'))
+      call add(result, i)
+    endif
+  endfor
+  return result
+endfunction
+
 " Return non-zero if a:list1 and a:list2 have any common item(s).
 " Return zero otherwise.
 function! s:has_common_items(list1, list2)

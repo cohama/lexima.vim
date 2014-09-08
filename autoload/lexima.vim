@@ -3,6 +3,17 @@ set cpo&vim
 
 let s:V = vital#of('lexima')
 let s:L = s:V.import('Data.List')
+let s:S = s:V.import('Data.String')
+
+let s:lexima_vital = {
+\ 'V' : s:V,
+\ 'L' : s:L,
+\ 'S' : s:S
+\ }
+
+function! lexima#vital()
+  return s:lexima_vital
+endfunction
 
 let g:lexima#rules = [
 \ {'char': '(', 'input_after': ')'},
@@ -22,7 +33,11 @@ let g:lexima#rules = [
 \ ]
 
 let s:lexima_rules = []
-let s:leximastack = []
+let s:input_stack = lexima#charstack#new()
+
+function! GetInputStack()
+  return s:input_stack
+endfunction
 
 function! lexima#init()
   let s:lexima_rules = sort(deepcopy(g:lexima#rules), function('s:rule_priority_order'))
@@ -51,7 +66,7 @@ function! s:leximap(char)
   if rule == {}
     return s:special_char(a:char)
   elseif get(rule, 'leave', 0)
-    return s:leave(s:special_char(get(rule, 'input', rule.char)), rule.at)
+    return s:leave(s:special_char(a:char), s:special_char(get(rule, 'input', rule.char)), rule.at)
   else
     return s:special_char(get(rule, 'input', rule.char)) . s:input(s:special_char(get(rule, 'input_after', '')))
   endif
@@ -99,22 +114,8 @@ function! s:input(input_after)
     call setline(lnum+i, repeat(' ', indent_depth) . getline(lnum+i))
   endfor
   call setpos('.', [bufnum, lnum, col, off])
-  call add(s:leximastack, [a:input_after, col])
+  call s:input_stack.push(a:input_after)
   return ''
-endfunction
-
-function! s:leave(input, at)
-  if empty(s:leximastack)
-    return a:input
-  endif
-  let len = len(a:input)
-  let will_leave = join(map(reverse(s:leximastack[(-len):-1]), 'v:val[0]'), '')
-  let endpos = searchpos(a:at, 'bcWn')
-  if endpos != [0, 0]
-    call s:leave_impl(a:input)
-    call remove(s:leximastack, -1)
-  endif
-  return a:input
 endfunction
 
 function! s:leave_impl(input)
@@ -150,20 +151,34 @@ function! s:leave_impl(input)
   return 1
 endfunction
 
+function! s:leave(fallback, input, at)
+  if s:input_stack.is_empty()
+    return a:input
+  endif
+  let endpos = searchpos(a:at, 'bcWn')
+  if endpos != [0, 0]
+    if s:leave_impl(a:input)
+      call s:input_stack.pop(len(a:input))
+      return a:input
+    endif
+  endif
+  return a:fallback
+endfunction
+
 function! s:escape()
   let curline = getline('.')
   let col = col('.')
-  if empty(s:leximastack)
+  if s:input_stack.is_empty()
     let ret = ''
   else
-    let remaining = join(reverse(map(s:leximastack, 'v:val[0]')), '')
+    echomsg string(s:input_stack)
+    let remaining = s:input_stack.pop_all()
     if s:leave_impl(remaining)
       let ret = remaining
     else
       let ret = ''
     endif
   endif
-  let s:leximastack = []
   return ret
 endfunction
 
