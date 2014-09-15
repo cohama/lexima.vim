@@ -88,15 +88,42 @@ function! s:suite.__defaults__()
     call Expect(['HOGE("FUGA")']).to_be_displayed()
   endfunction
 
-  function
-
 endfunction
 
 function! s:suite.__filetype_rules__()
-  let ft_rules = themis#suite('filetype rules')
+  let ft_rule = themis#suite('filetype rules')
 
-  function! ft_rules.before_each()
-    
+  function! ft_rule.before()
+    call lexima#clear_rules()
+    let s:save_default_rules = g:lexima#default_rules
+    let g:lexima_no_default_rules = 1
+    call lexima#add_rule({'char': '(', 'input_after': ')'})
+    call lexima#add_rule({'char': '(', 'input_after': 'Ruby!)', 'filetype': 'ruby'})
+    call lexima#add_rule({'char': '(', 'input_after': 'Java script?)', 'filetype': 'javascript'})
+  endfunction
+
+  function! ft_rule.before_each()
+    only!
+    enew!
+  endfunction
+
+  function! ft_rule.is_triggered_in_suitable_filetype()
+    execute "normal i(\<Esc>"
+    call Expect(['()']).to_be_displayed()
+    enew!
+    setlocal filetype=ruby
+    execute "normal i(\<Esc>"
+    call Expect(['(Ruby!)']).to_be_displayed()
+    enew!
+    setlocal filetype=javascript
+    execute "normal i(\<Esc>"
+    call Expect(['(Java script?)']).to_be_displayed()
+  endfunction
+
+  function! ft_rule.falls_back_to_default_rule()
+    setlocal filetype=ocaml
+    execute "normal i(\<Esc>"
+    call Expect(['()']).to_be_displayed()
   endfunction
 
 endfunction

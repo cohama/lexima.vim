@@ -119,6 +119,12 @@ function! s:find_rule(char)
       continue
     endif
 
+    if !empty(rule.filetype)
+      if !s:L.any('v:val ==? &filetype', rule.filetype)
+        continue
+      endif
+    endif
+
     return rule
   endfor
   return {}
