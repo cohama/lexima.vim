@@ -134,7 +134,12 @@ function! s:input(input, input_after)
   let curline = getline('.')
   let [bufnum, lnum, col, off] = getpos('.')
   let inputs = split(a:input_after, "\r", 1)
-  let inputs[0] = curline[0:col-2] . inputs[0]
+  if col ==# 1
+    let precursor = ''
+  else
+    let precursor = curline[0:col-2]
+  endif
+  let inputs[0] = precursor . inputs[0]
   let inputs[-1] = inputs[-1] . curline[col-1:-1]
   call setline('.', inputs[0])
   for i in range(1, len(inputs)-1)

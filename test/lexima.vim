@@ -9,7 +9,9 @@ function! s:suite.__defaults__()
 
   function! defaults.automatically_inputs_pair_parentheses()
     execute "normal aHOGE(FUGA(PIYO\<Esc>"
-    call Expect('HOGE(FUGA(PIYO))').to_be_displayed()
+    call Expect(['HOGE(FUGA(PIYO))']).to_be_displayed()
+    execute "normal I(\<Esc>"
+    call Expect(['()HOGE(FUGA(PIYO))']).to_be_displayed()
   endfunction
 
   function! defaults.can_repeat_with_dots()
