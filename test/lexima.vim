@@ -129,3 +129,28 @@ function! s:suite.__filetype_rules__()
   endfunction
 
 endfunction
+
+function! s:suite.__syntax_rules__()
+  let syn_rule = themis#suite('syntax rules')
+
+  function! syn_rule.before()
+    call lexima#clear_rules()
+    let s:save_default_rules = g:lexima#default_rules
+    let g:lexima_no_default_rules = 1
+    call lexima#add_rule({'char': '"', 'input_after': '"'})
+    call lexima#add_rule({'char': '%', 'input': '%%', 'syntax': 'String'})
+    vnew
+    only!
+    setlocal filetype=vim
+  endfunction
+
+  function! syn_rule.before_each()
+    %delete _
+  endfunction
+
+  function! syn_rule.is_triggered_in_suitable_syntax()
+    execute "normal ilet x = %\"%\<Esc>"
+    call Expect(['let x = %"%%"']).to_be_displayed()
+  endfunction
+
+endfunction

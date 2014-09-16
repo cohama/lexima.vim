@@ -1,5 +1,6 @@
 let s:expect = themis#helper('expect')
 
+syntax on
 filetype plugin indent on
 
 function! Expect(v)

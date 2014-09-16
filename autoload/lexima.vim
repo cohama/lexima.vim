@@ -108,6 +108,7 @@ function! s:leximap(char)
 endfunction
 
 function! s:find_rule(char)
+  let syntax_chain = s:get_syntax_link_chain()
   for rule in s:lexima_rules.as_list()
     if rule.char !=# a:char
       continue
@@ -120,7 +121,20 @@ function! s:find_rule(char)
     endif
 
     if !empty(rule.filetype)
-      if !s:L.any('v:val ==? &filetype', rule.filetype)
+      if index(rule.filetype, &filetype) ==# -1
+        continue
+      endif
+    endif
+
+    if !empty(rule.syntax)
+      let found = 0
+      for syn in syntax_chain
+        if index(rule.syntax, syn) >=# 0
+          let found = 1
+          break
+        endif
+      endfor
+      if !found
         continue
       endif
     endif
@@ -128,6 +142,22 @@ function! s:find_rule(char)
     return rule
   endfor
   return {}
+endfunction
+
+function! s:get_syntax_link_chain()
+  let synname = synIDattr(synID(line('.'), col('.'), 1), "name")
+  let result_stack = []
+  while 1
+    if synname ==# ''
+      break
+    endif
+    call add(result_stack, synname)
+    redir => hiresult
+      execute 'silent! highlight ' . synname
+    redir END
+    let synname = matchstr(hiresult, 'links to \zs\w\+')
+  endwhile
+  return result_stack
 endfunction
 
 function! s:input(input, input_after)
