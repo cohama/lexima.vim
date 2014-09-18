@@ -55,4 +55,11 @@ function! s:suite.__new_stack__()
     call Expect(s:stack.is_empty()).to_be_false()
   endfunction
 
+  function! new_stack.can_get_count_of_items()
+    call s:stack.push('foo')
+    call s:stack.push('bar')
+    call s:stack.push('buz')
+    call Expect(s:stack.count()).to_equal(9)
+  endfunction
+
 endfunction

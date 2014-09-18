@@ -33,5 +33,9 @@ function! s:stack.is_empty()
   return empty(self.v)
 endfunction
 
+function! s:stack.count()
+  return len(self.v)
+endfunction
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
