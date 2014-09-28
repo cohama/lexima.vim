@@ -24,7 +24,7 @@ let g:lexima#default_rules = [
 \ {'char': '(', 'input_after': ')'},
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
 \ {'char': '{', 'input_after': '}'},
-\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 1, 'input': '<CR>}'},
+\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '}', 'at': '\%#}', 'leave': 1},
 \ {'char': '[', 'input_after': ']'},
 \ {'char': ']', 'at': '\%#]', 'leave': 1},
@@ -33,7 +33,7 @@ let g:lexima#default_rules = [
 \ {'char': "'", 'input_after': "'"},
 \ {'char': "'", 'at': '\%#''', 'leave': 1},
 \ {'char': "%", 'at': '<\%#', 'input_after': '%>'},
-\ {'char': "%", 'at': '\%#%>', 'input': '%>', 'leave': 1},
+\ {'char': "%", 'at': '\%#%>', 'input': '%>', 'leave': 2},
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ ]
 
@@ -65,22 +65,6 @@ function! lexima#add_rule(rule)
   call s:define_map(rule.char)
 endfunction
 
-function! lexima#escape()
-  let curline = getline('.')
-  let col = col('.')
-  if s:input_stack.is_empty()
-    let ret = ''
-  else
-    let remaining = s:input_stack.pop_all()
-    if s:leave_impl(remaining)
-      let ret = remaining
-    else
-      let ret = ''
-    endif
-  endif
-  return ret
-endfunction
-
 function! s:map_char(char)
   return substitute(a:char, '<', '<LT>', 'g')
 endfunction
@@ -100,8 +84,8 @@ function! s:leximap(char)
   let rule = s:find_rule(a:char)
   if rule == {}
     return s:special_char(a:char)
-  elseif rule.leave
-    return s:leave(s:special_char(a:char), s:special_char(get(rule, 'input', rule.char)), rule.at)
+  elseif rule.leave ># 0
+    return s:leave(s:special_char(a:char), rule.leave)
   else
     return s:input(s:special_char(get(rule, 'input', rule.char)), s:special_char(get(rule, 'input_after', '')))
   endif
@@ -194,13 +178,15 @@ function! s:input(input, input_after)
   return a:input
 endfunction
 
-function! s:leave_impl(input)
+function! s:leave_impl(len)
+  let input = s:input_stack.peek(a:len)
+  verb echomsg "i: " . input
   let col = col('.')
-  let cr_count = len(split(a:input, "\r", 1)) - 1
-  let will_input = substitute(a:input, "\r", '\\n\\s*', 'g')
+  let cr_count = len(split(input, "\r", 1)) - 1
+  let will_input = substitute(input, "\r", '\\n\\s*', 'g')
   let illegal = search('\%#' . will_input) ==# 0
   if illegal
-    return 0
+    return ''
   endif
   let [bufnum, lnum, _, off] = getpos('.')
   for i in range(1, cr_count)
@@ -211,7 +197,7 @@ function! s:leave_impl(input)
   endif
   call setpos('.', [bufnum, lnum, col, off])
   let curline = getline('.')
-  let len = len(a:input) - cr_count
+  let len = len(input) - cr_count
   if col ==# 1
     let precursor = ''
   else
@@ -224,21 +210,36 @@ function! s:leave_impl(input)
     let postcursor = curline[(col-1+len):-1]
   endif
   call setline('.', precursor . postcursor)
-  return 1
+  return s:input_stack.pop(a:len)
 endfunction
 
-function! s:leave(fallback, input, at)
+function! s:leave(fallback, len)
   if s:input_stack.is_empty()
-    return a:input
+    return a:fallback
   endif
-  let endpos = searchpos(a:at, 'bcWn')
-  if endpos != [0, 0]
-    if s:leave_impl(a:input)
-      call s:input_stack.pop(len(a:input))
-      return a:input
+  let input = s:input_stack.peek(a:len)
+  let ret = s:leave_impl(a:len)
+  if !empty(ret)
+    return input
+  else
+    return a:fallback
+  endif
+endfunction
+
+function! lexima#escape()
+  let curline = getline('.')
+  let col = col('.')
+  if s:input_stack.is_empty()
+    let ret = ''
+  else
+    let remaining = s:input_stack.peek(0)
+    if !empty(s:leave_impl(len(remaining)))
+      let ret = remaining
+    else
+      let ret = ''
     endif
   endif
-  return a:fallback
+  return ret
 endfunction
 
 function! s:regularize(rule)
