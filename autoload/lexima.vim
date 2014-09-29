@@ -297,5 +297,11 @@ function! lexima#get_rules()
   endif
 endfunction
 
+function! lexima#clear_stack()
+  if !s:input_stack.is_empty()
+    call s:input_stack.pop_all()
+  endif
+endfunction
+
 let &cpo = s:save_cpo
 unlet s:save_cpo

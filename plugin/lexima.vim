@@ -15,5 +15,9 @@ if !g:lexima_no_map_to_escape
   inoremap <Esc> <C-r>=lexima#escape()<CR><Esc>
 endif
 
+augroup lexima
+  autocmd InsertEnter * call lexima#clear_stack()
+augroup END
+
 let &cpo = s:save_cpo
 unlet s:save_cpo
