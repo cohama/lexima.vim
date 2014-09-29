@@ -203,6 +203,11 @@ function! lexima#leave_all(fallback)
   return lexima#leave(s:input_stack.count(), a:fallback)
 endfunction
 
+function! lexima#leave_till_eol(fallback)
+  let input = s:input_stack.peek(0)
+  return lexima#leave(len(split(input, "\r")[0]), a:fallback)
+endfunction
+
 function! lexima#leave(len, fallback)
   if s:input_stack.is_empty()
     return a:fallback

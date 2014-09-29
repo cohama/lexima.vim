@@ -175,6 +175,16 @@ function! s:suite.__leave_rules__()
     call Expect(['', '{', "\t{", "\t\thoge{}", "\t}", '}', '{', "\t{", "\t\thoge{}", "\t}", '}']).to_be_displayed()
   endfunction
 
+  function! leave_rule.can_leave_till_end_of_line()
+    call lexima#add_rule({'char': '"', 'input_after': '"'})
+    call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+    call lexima#add_rule({'char': '}', 'leave': '}'})
+    execute "normal o{\<CR>{\<CR>hoge{\"foo{\<C-r>=lexima#leave_till_eol('')\<CR>;\<Esc>"
+    call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
+    normal! .
+    call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
+  endfunction
+
 endfunction
 
 function! s:suite.__filetype_rules__()
