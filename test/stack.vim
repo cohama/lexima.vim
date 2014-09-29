@@ -69,3 +69,31 @@ function! s:suite.__new_stack__()
   endfunction
 
 endfunction
+
+function! s:suite.__event__()
+  let onchange = themis#suite('on change event')
+
+  function! OnChangeFn()
+    let s:change_count += 1
+  endfunction
+
+  function onchange.before()
+    let s:stack = lexima#charstack#new()
+    let s:change_count = 0
+    let s:stack.on_change = function('OnChangeFn')
+  endfunction
+
+  function! onchange.after()
+    unlet s:stack
+    unlet s:change_count
+    delfunction OnChangeFn
+  endfunction
+
+  function! onchange.is_called_on_pushed_andor_popped()
+    call s:stack.push('a')
+    call s:stack.peek(1)
+    call s:stack.pop(1)
+    call Expect(s:change_count).to_equal(2)
+  endfunction
+
+endfunction

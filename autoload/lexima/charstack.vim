@@ -14,6 +14,7 @@ endfunction
 function! s:stack.push(str)
   let xs = split(a:str, '.\zs')
   call extend(self.v, xs, 0)
+  call self._fire_change_event()
 endfunction
 
 function! s:stack.pop(n)
@@ -21,7 +22,9 @@ function! s:stack.pop(n)
     return ''
   else
     let n = (a:n ># self.count()) ? self.count() : a:n
-    return join(remove(self.v, 0, n-1), '')
+    let ret = join(remove(self.v, 0, n-1), '')
+    call self._fire_change_event()
+    return ret
   endif
 endfunction
 
@@ -40,6 +43,13 @@ endfunction
 
 function! s:stack.count()
   return len(self.v)
+endfunction
+
+function! s:stack._fire_change_event()
+  if has_key(self, 'on_change')
+  \ && type(self.on_change) ==# type(function('function'))
+    call self.on_change()
+  endif
 endfunction
 
 let &cpo = s:save_cpo
