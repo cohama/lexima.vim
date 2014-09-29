@@ -17,7 +17,12 @@ function! s:stack.push(str)
 endfunction
 
 function! s:stack.pop(n)
-  return join(remove(self.v, 0, a:n-1), '')
+  if self.is_empty()
+    return ''
+  else
+    let n = (a:n ># self.count()) ? self.count() : a:n
+    return join(remove(self.v, 0, n-1), '')
+  endif
 endfunction
 
 function! s:stack.peek(...)

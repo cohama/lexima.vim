@@ -22,6 +22,12 @@ function! s:suite.__new_stack__()
     call Expect(s:stack.is_empty()).to_be_true()
   endfunction
 
+  function! new_stack.can_pop_but_nothing_returned()
+    call Expect(s:stack.pop(100)).to_equal('')
+    call s:stack.push('b')
+    call Expect(s:stack.pop(2)).to_equal('b')
+  endfunction
+
   function! new_stack.can_pop_two_element_sequentially()
     call s:stack.push('foo')
     call s:stack.push('bar')
