@@ -12,7 +12,7 @@ let g:lexima_no_map_to_escape = get(g:, 'lexima_no_escape_mapping', 0)
 call lexima#init()
 
 if !g:lexima_no_map_to_escape
-  inoremap <Esc> <C-r>=lexima#escape()<CR><Esc>
+  inoremap <Esc> <C-r>=lexima#leave_all('')<CR><Esc>
 endif
 
 augroup lexima

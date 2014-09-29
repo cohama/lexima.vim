@@ -12,7 +12,6 @@ let s:lexima_vital = {
 
 let s:default_rule = {
 \ 'at': '\%#',
-\ 'leave': 0,
 \ 'filetype': [],
 \ 'syntax': [],
 \ 'mode': 'i'
@@ -84,10 +83,22 @@ function! s:leximap(char)
   let rule = s:find_rule(a:char)
   if rule == {}
     return s:special_char(a:char)
-  elseif rule.leave ># 0
-    return s:leave(s:special_char(a:char), rule.leave)
   else
-    return s:input(s:special_char(get(rule, 'input', rule.char)), s:special_char(get(rule, 'input_after', '')))
+    if has_key(rule, 'leave')
+      echomsg string(rule)
+      if type(rule.leave) ==# type('')
+        let input = printf('<C-r>=lexima#leave_till("%s", "%s")<CR>', rule.leave, rule.char)
+      elseif type(rule.leave) ==# type(0)
+        let input = printf('<C-r>=lexima#leave(%d, "%s")<CR>', rule.leave, rule.char)
+      else
+        throw 'lexima: Not applicable rule (' . string(rule) . ')'
+      endif
+      let input_after = ''
+    else
+      let input = get(rule, 'input', rule.char)
+      let input_after = get(rule, 'input_after', '')
+    endif
+    return s:input(s:special_char(input), s:special_char(input_after))
   endif
 endfunction
 
@@ -178,17 +189,32 @@ function! s:input(input, input_after)
   return a:input
 endfunction
 
-function! s:leave_impl(len)
+function! lexima#leave_till(char, fallback)
+  let input = s:input_stack.peek(0)
+  let tilllen = match(input, a:char)
+  if tilllen ==# -1
+    return ''
+  else
+    return lexima#leave(tilllen + len(a:char), a:fallback)
+  endif
+endfunction
+
+function! lexima#leave_all(fallback)
+  return lexima#leave(s:input_stack.count(), a:fallback)
+endfunction
+
+function! lexima#leave(len, fallback)
+  if s:input_stack.is_empty()
+    return a:fallback
+  endif
   let input = s:input_stack.peek(a:len)
-  verb echomsg "i: " . input
-  let col = col('.')
+  let [bufnum, lnum, col, off] = getpos('.')
   let cr_count = len(split(input, "\r", 1)) - 1
   let will_input = substitute(input, "\r", '\\n\\s*', 'g')
   let illegal = search('\%#' . will_input) ==# 0
   if illegal
-    return ''
+    return a:fallback
   endif
-  let [bufnum, lnum, _, off] = getpos('.')
   for i in range(1, cr_count)
     call setline(lnum+i, substitute(getline(lnum+i), '^\s*', '', ''))
   endfor
@@ -211,35 +237,6 @@ function! s:leave_impl(len)
   endif
   call setline('.', precursor . postcursor)
   return s:input_stack.pop(a:len)
-endfunction
-
-function! s:leave(fallback, len)
-  if s:input_stack.is_empty()
-    return a:fallback
-  endif
-  let input = s:input_stack.peek(a:len)
-  let ret = s:leave_impl(a:len)
-  if !empty(ret)
-    return input
-  else
-    return a:fallback
-  endif
-endfunction
-
-function! lexima#escape()
-  let curline = getline('.')
-  let col = col('.')
-  if s:input_stack.is_empty()
-    let ret = ''
-  else
-    let remaining = s:input_stack.peek(0)
-    if !empty(s:leave_impl(len(remaining)))
-      let ret = remaining
-    else
-      let ret = ''
-    endif
-  endif
-  return ret
 endfunction
 
 function! s:regularize(rule)

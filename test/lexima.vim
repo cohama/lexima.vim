@@ -92,29 +92,87 @@ function! s:suite.__defaults__()
 
 endfunction
 
+" function! s:suite.__leave_rules__()
+"   let leave_rule = themis#suite('leave rules')
+
+"   function! leave_rule.before()
+"     call lexima#clear_rules()
+"     call lexima#add_rule({'char': '(', 'input_after': ')'})
+"     call lexima#add_rule({'char': '*', 'at': '(\%#)', 'input_after': '*'})
+"     call lexima#add_rule({'char': '*', 'at': '\%#\*)', 'leave': 1})
+"     call lexima#add_rule({'char': ')', 'at': '\%#\*)', 'leave': 2})
+"   endfunction
+
+"   function! leave_rule.before_each()
+"     %delete _
+"   endfunction
+
+"   function! leave_rule.can_leave_one()
+"     execute "normal i(**;\<Esc>"
+"     call Expect(['(**;)']).to_be_displayed()
+"   endfunction
+
+"   function! leave_rule.can_leave_two()
+"     execute "normal i(*);\<Esc>"
+"     call Expect(['(**);']).to_be_displayed()
+"   endfunction
+
+" endfunction
+
 function! s:suite.__leave_rules__()
   let leave_rule = themis#suite('leave rules')
 
   function! leave_rule.before()
-    call lexima#clear_rules()
-    call lexima#add_rule({'char': '(', 'input_after': ')'})
-    call lexima#add_rule({'char': '*', 'at': '(\%#)', 'input_after': '*'})
-    call lexima#add_rule({'char': '*', 'at': '\%#\*)', 'leave': 1})
-    call lexima#add_rule({'char': ')', 'at': '\%#\*)', 'leave': 2})
+    new
+    setlocal nocindent smartindent
+    only!
   endfunction
 
   function! leave_rule.before_each()
+    call lexima#clear_rules()
+    call lexima#add_rule({'char': '{', 'input_after': '}'})
+    call lexima#add_rule({'char': '*', 'at': '{\%#}', 'input_after': '*'})
     %delete _
   endfunction
 
   function! leave_rule.can_leave_one()
-    execute "normal i(**;\<Esc>"
-    call Expect(['(**;)']).to_be_displayed()
+    call lexima#add_rule({'char': '*', 'at': '\%#\*}', 'leave': 1})
+    execute "normal i{**;\<Esc>"
+    call Expect(['{**;}']).to_be_displayed()
   endfunction
 
   function! leave_rule.can_leave_two()
-    execute "normal i(*);\<Esc>"
-    call Expect(['(**);']).to_be_displayed()
+    call lexima#add_rule({'char': '}', 'at': '\%#\*}', 'leave': 2})
+    execute "normal i{*};\<Esc>"
+    call Expect(['{**};']).to_be_displayed()
+  endfunction
+
+  function! leave_rule.can_leave_till_specified_char()
+    call lexima#add_rule({'char': '}', 'at': '\%#\*}', 'leave': '}'})
+    execute "normal i{*};\<Esc>"
+    call Expect(['{**};']).to_be_displayed()
+  endfunction
+
+  function! leave_rule.can_leave_over_cr()
+    call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+    call lexima#add_rule({'char': '}', 'leave': 1})
+    execute "normal i{\<CR>;}\<Esc>"
+    call Expect(['{', "\t;", '}']).to_be_displayed()
+  endfunction
+
+  function! leave_rule.can_leave_till_specified_char_over_cr()
+    call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+    call lexima#add_rule({'char': '}', 'leave': '}'})
+    execute "normal i{\<CR>;}\<Esc>"
+    call Expect(['{', "\t;", '}']).to_be_displayed()
+  endfunction
+
+  function! leave_rule.can_leave_till_specified_char_over_cr()
+    call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+    call lexima#add_rule({'char': '}', 'leave': '}'})
+    execute "normal o{\<CR>{\<CR>hoge{}}\<Esc>"
+    normal! .
+    call Expect(['', '{', "\t{", "\t\thoge{}", "\t}", '}', '{', "\t{", "\t\thoge{}", "\t}", '}']).to_be_displayed()
   endfunction
 
 endfunction
