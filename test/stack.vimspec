@@ -1,0 +1,99 @@
+Describe stack
+
+  Context new stack
+
+    Before each
+      let s:stack = lexima#charstack#new()
+    End
+
+    After each
+      unlet s:stack
+    End
+
+    It can push one element
+      call s:stack.push('a')
+      call Expect(s:stack.is_empty()).to_be_false()
+    End
+
+    It can push and pop one element
+      call s:stack.push('b')
+      call Expect(s:stack.pop(1)).to_equal('b')
+      call Expect(s:stack.is_empty()).to_be_true()
+    End
+
+    It can pop but nothing returned
+      call Expect(s:stack.pop(100)).to_equal('')
+      call s:stack.push('b')
+      call Expect(s:stack.pop(2)).to_equal('b')
+    End
+
+    It can pop two element sequentially
+      call s:stack.push('foo')
+      call s:stack.push('bar')
+      call Expect(s:stack.pop(2)).to_equal('ba')
+      call Expect(s:stack.is_empty()).to_be_false()
+      call Expect(s:stack.pop_all()).to_equal('rfoo')
+      call Expect(s:stack.is_empty()).to_be_true()
+    End
+
+    It can pop all
+      call s:stack.push('abc')
+      call s:stack.push('def')
+      call s:stack.push('ghi')
+      call Expect(s:stack.pop_all()).to_equal('ghidefabc')
+      call Expect(s:stack.is_empty()).to_be_true()
+    End
+
+    It can push and pop one element
+      call s:stack.push('b')
+      call Expect(s:stack.peek()).to_equal('b')
+      call Expect(s:stack.is_empty()).to_be_false()
+    End
+
+    It can peek two element sequentially
+      call s:stack.push('foo')
+      call s:stack.push('bar')
+      call s:stack.push('buz')
+      call Expect(s:stack.peek(2)).to_equal('bu')
+      call Expect(s:stack.is_empty()).to_be_false()
+      call Expect(s:stack.pop(2)).to_equal('bu')
+      call Expect(s:stack.is_empty()).to_be_false()
+    End
+
+    It can get count of items
+      call s:stack.push('foo')
+      call s:stack.push('bar')
+      call s:stack.push('buz')
+      call Expect(s:stack.count()).to_equal(9)
+    End
+
+  End
+
+  Context event
+
+    function! OnChangeFn()
+      let s:change_count += 1
+    endfunction
+
+    Before all
+      let s:stack = lexima#charstack#new()
+      let s:change_count = 0
+      let s:stack.on_change = function('OnChangeFn')
+    End
+
+    After all
+      unlet s:stack
+      unlet s:change_count
+      delfunction OnChangeFn
+    End
+
+    It is called on pushed andor popped
+      call s:stack.push('a')
+      call s:stack.peek(1)
+      call s:stack.pop(1)
+      call Expect(s:change_count).to_equal(2)
+    End
+
+  End
+
+End
