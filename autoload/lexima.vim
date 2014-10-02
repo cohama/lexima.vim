@@ -18,6 +18,7 @@ let s:default_rule = {
 \ }
 
 let s:lexima_mapped_chars = []
+let s:lexima_mapped_chars_on_commandline = []
 
 let g:lexima#default_rules = [
 \ {'char': '(', 'input_after': ')'},
@@ -36,6 +37,9 @@ let g:lexima#default_rules = [
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ ]
 
+let g:lexima#default_rules_on_cmdline = [
+\ ]
+
 function! lexima#vital()
   return s:lexima_vital
 endfunction
@@ -45,8 +49,9 @@ function! lexima#init()
   let s:lexima_mapped_chars = []
   let default_rules = g:lexima_no_default_rules ? [] : map(deepcopy(g:lexima#default_rules), 's:regularize(v:val)')
   let s:lexima_rules = lexima#sortedlist#new(default_rules, function('lexima#_priority_order'))
+  let s:lexima_rules_on_cmdline = lexima#sortedlist#new(g:lexima#default_rules_on_cmdline, function('lexima#_priority_order_on_cmdline'))
   for rule in default_rules
-    call s:define_map(rule.char)
+    call lexima#add_rule(rule)
   endfor
 endfunction
 
@@ -54,14 +59,25 @@ function! lexima#clear_rules()
   for c in s:lexima_mapped_chars
     execute "iunmap " . c
   endfor
+  for c in s:lexima_mapped_chars_on_commandline
+    execute "cunmap " . c
+  endfor
   let s:lexima_mapped_chars = []
+  let s:lexima_mapped_chars_on_commandline = []
   call s:lexima_rules.clear()
+  call s:lexima_rules_on_cmdline.clear()
 endfunction
 
 function! lexima#add_rule(rule)
   let rule = s:regularize(a:rule)
-  call s:lexima_rules.add(rule)
-  call s:define_map(rule.char)
+  if rule.mode =~# 'i'
+    call s:lexima_rules.add(rule)
+    call s:define_map(rule.char)
+  endif
+  if rule.mode =~# '[c:/?]'
+    call s:lexima_rules_on_cmdline.add(rule)
+    call s:define_map_cmdline(rule.char)
+  endif
 endfunction
 
 function! s:map_char(char)
@@ -72,6 +88,13 @@ function! s:define_map(c)
   if index(s:lexima_mapped_chars, a:c) ==# -1
     execute printf("inoremap %s \<C-r>=<SID>leximap('%s')\<CR>", a:c, substitute(s:map_char(a:c), "'", "''", 'g'))
     call add(s:lexima_mapped_chars, a:c)
+  endif
+endfunction
+
+function! s:define_map_cmdline(c)
+  if index(s:lexima_mapped_chars_on_commandline, a:c) ==# -1
+    execute printf("cnoremap %s \<C-\>e<SID>lexcmap('%s')\<CR>", a:c, substitute(s:map_char(a:c), "'", "''", 'g'))
+    call add(s:lexima_mapped_chars_on_commandline, a:c)
   endif
 endfunction
 
@@ -130,6 +153,73 @@ function! s:find_rule(char)
         endif
       endfor
       if !found
+        continue
+      endif
+    endif
+
+    return rule
+  endfor
+  return {}
+endfunction
+
+function! s:lexcmap(char)
+  let pos = getcmdpos()
+  let cmdline = getcmdline()
+  if pos ==# 1
+    let precursor = ''
+  else
+    let precursor = cmdline[0:pos-2]
+  endif
+  if pos ==# len(cmdline) + 1
+    let postcursor = ''
+  else
+    let postcursor = cmdline[pos-1:-1]
+  endif
+  let rule = s:find_rule_on_cmdline(a:char)
+  if rule == {}
+    return precursor . s:special_char(a:char) . postcursor
+  else
+    if has_key(rule, 'leave')
+    else
+      let input = get(rule, 'input', rule.char)
+      let input_after = get(rule, 'input_after', '')
+    endif
+    call setcmdpos(pos + len(input))
+    return precursor . s:special_char(input) . s:special_char(input_after) . postcursor
+  endif
+endfunction
+
+function! s:find_rule_on_cmdline(char)
+  let pos = getcmdpos()
+  let cmdline = getcmdline()
+  if pos ==# 1
+    let precursor = ''
+  else
+    let precursor = cmdline[0:pos-2]
+  endif
+  if pos ==# len(cmdline) + 1
+    let postcursor = ''
+  else
+    let postcursor = cmdline[pos-1:-1]
+  endif
+  let cmdtype = getcmdtype()
+  for rule in s:lexima_rules_on_cmdline.as_list()
+    if rule.mode !~# 'c' && rule.mode !~# cmdtype
+      continue
+    endif
+
+    if rule.char !=# a:char
+      continue
+    endif
+
+    let [pre_at, post_at] = map(split(rule.at, '\\%#', 1) + ['', ''], 'v:val . "$"')[0:1]
+
+    if precursor !~# pre_at || postcursor !~# post_at
+      continue
+    endif
+
+    if !empty(rule.filetype)
+      if index(rule.filetype, &filetype) ==# -1
         continue
       endif
     endif
@@ -291,9 +381,45 @@ function! lexima#_priority_order(rule1, rule2)
   endif
 endfunction
 
+function! lexima#_priority_order_on_cmdline(rule1, rule2)
+  let ft1 = !empty(a:rule1.filetype)
+  let ft2 = !empty(a:rule2.filetype)
+  if ft1 && !ft2
+    return 1
+  elseif ft2 && !ft1
+    return -1
+  else
+    let pri1 = get(a:rule1, 'priority', 0)
+    let pri2 = get(a:rule2, 'priority', 0)
+    if pri1 > pri2
+      return 1
+    elseif pri1 < pri2
+      return -1
+    else
+      let atlen1 = len(a:rule1.at)
+      let atlen2 = len(a:rule2.at)
+      if atlen1 > atlen2
+        return 1
+      elseif atlen1 < atlen2
+        return -1
+      else
+        return 0
+      endif
+    endif
+  endif
+endfunction
+
 function! lexima#get_rules()
   if exists('s:lexima_rules')
     return s:lexima_rules.as_list()
+  else
+    return []
+  endif
+endfunction
+
+function! lexima#get_cmdline_rules()
+  if exists('s:lexima_rules_on_cmdline')
+    return s:lexima_rules_on_cmdline.as_list()
   else
     return []
   endif

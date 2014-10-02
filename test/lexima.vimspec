@@ -245,22 +245,54 @@ Describe lexima's
   Context commandline mappings
 
     Before all
-      call lexima#clear_rules()
-      call lexima#add_rule({'char': '(', 'input': '{', 'input_after': '}', 'mode': 'c'})
-      command -nargs=* Test let g:cmdline_mappings_input = <q-args>
       call themis#helper#expect#define_matcher('to_change_to', 'g:cmdline_mappings_input ==# a:2', '"Expected " . g:cmdline_mappings_input . " to change to " . a:2')
     End
 
+    Before each
+      call lexima#clear_rules()
+    End
+
+    function! CmdlineInputHook()
+      let g:cmdline_mappings_input = getcmdline()
+      return ''
+    endfunction
+
     function! CmdlineInput(str)
-      execute "normal :Test " . a:str . "\<CR>"
+      execute 'normal ' . a:str . "\<C-r>=CmdlineInputHook()\<CR>"
       return a:str
     endfunction
 
-    It works well
-      call Expect(CmdlineInput("(")).to_change_to("{}")
+    It works well on any commandline mode if mode is c
+      call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': 'c'})
+      call Expect(CmdlineInput(":(")).to_change_to("(")
+      call Expect(CmdlineInput(":hoge((")).to_change_to("hoge{(}")
+      call Expect(CmdlineInput("/hoge((")).to_change_to("hoge{(}")
+      call Expect(CmdlineInput("?hoge((")).to_change_to("hoge{(}")
+    End
+
+    It works well on forward search mode if mode is /
+      call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': '/'})
+      call Expect(CmdlineInput(":hoge((")).to_change_to("hoge((")
+      call Expect(CmdlineInput("/hoge((")).to_change_to("hoge{(}")
+      call Expect(CmdlineInput("?hoge((")).to_change_to("hoge((")
+    End
+
+    It works well on backward search mode if mode is ?
+      call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': '?'})
+      call Expect(CmdlineInput(":hoge((")).to_change_to("hoge((")
+      call Expect(CmdlineInput("/hoge((")).to_change_to("hoge((")
+      call Expect(CmdlineInput("?hoge((")).to_change_to("hoge{(}")
+    End
+
+    It works well on search mode if mode is /?
+      call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': '/?'})
+      call Expect(CmdlineInput(":hoge((")).to_change_to("hoge((")
+      call Expect(CmdlineInput("/hoge((")).to_change_to("hoge{(}")
+      call Expect(CmdlineInput("?hoge((")).to_change_to("hoge{(}")
     End
 
     It does not affect on insertmode
+      call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': ':/?'})
       execute "normal ihoge(\<Esc>"
       call Expect(['hoge(']).to_be_displayed()
     End
