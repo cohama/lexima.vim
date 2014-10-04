@@ -1,0 +1,96 @@
+Describe default rule
+
+  Before all
+    call lexima#init()
+    new | only!
+  End
+
+  After each
+    new | only!
+  End
+
+  It automatically inputs pair parentheses
+    execute "normal aHOGE(FUGA(PIYO\<Esc>"
+    call Expect(['HOGE(FUGA(PIYO))']).to_be_displayed()
+    execute "normal I(\<Esc>"
+    call Expect(['()HOGE(FUGA(PIYO))']).to_be_displayed()
+  End
+
+  It can repeat with dots
+    execute "normal oHOGE(FUGA(PIYO\<Esc>"
+    normal! ..
+    call Expect(['', 'HOGE(FUGA(PIYO))', 'HOGE(FUGA(PIYO))', 'HOGE(FUGA(PIYO))']).to_be_displayed()
+  End
+
+  It can input closing parenthesis
+    execute "normal i)\<Esc>"
+    call Expect(')').to_be_displayed()
+  End
+
+  It can leave at end of parenthesis
+    execute "normal iHOGE(FUGA(PIYO))\<Esc>"
+    call Expect(['HOGE(FUGA(PIYO))']).to_be_displayed()
+  End
+
+  It can leave at end of parenthesis2
+    execute "normal iHOGE(FUGA(PIYO), x(y\<Esc>"
+    call Expect('HOGE(FUGA(PIYO), x(y))').to_be_displayed()
+  End
+
+  It with leave can repeat with dots
+    execute "normal oHOGE(FUGA(PIYO), x(y\<Esc>"
+    normal! ..
+    call Expect(['', 'HOGE(FUGA(PIYO), x(y))', 'HOGE(FUGA(PIYO), x(y))', 'HOGE(FUGA(PIYO), x(y))', ]).to_be_displayed()
+  End
+
+  It with leave can repeat with dots2
+    for i in range(1, 3)
+      call setline(i, '12345')
+    endfor
+    normal! gg2|
+    execute "normal aHOGE(FUGA(PIYO), x(y\<Esc>"
+    normal! j0.
+    normal! j$.
+    call Expect(['12HOGE(FUGA(PIYO), x(y))345', '1HOGE(FUGA(PIYO), x(y))2345', '12345HOGE(FUGA(PIYO), x(y))', ]).to_be_displayed()
+  End
+
+  It can repeat if CR input
+    execute "normal oHOGE(\<CR>\<Esc>"
+    normal! ..
+    call Expect(['', 'HOGE(', ')', 'HOGE(', ')', 'HOGE(', ')']).to_be_displayed()
+  End
+
+  It can repeat if CR input with set smartindent
+    setlocal smartindent
+    execute "normal oHOGE(\<CR>\<Esc>"
+    normal! ..
+    call Expect(['', 'HOGE(', ')', 'HOGE(', ')', 'HOGE(', ')']).to_be_displayed()
+    setlocal smartindent&
+  End
+
+  It automatically inputs pair braces with newline
+    execute "normal aHOGE({\<CR>FUGA{\<CR>PIYO{\<CR>\<Esc>"
+    call Expect(['HOGE({', 'FUGA{', 'PIYO{', '', '}', '}', '})']).to_be_displayed()
+  End
+
+  It automatically inputs pair braces with newline and set smartindent
+    setlocal smartindent
+    execute "normal aHOGE({\<CR>FUGA{\<CR>PIYO{\<CR>\<Esc>"
+    call Expect(['HOGE({', "\tFUGA{", "\t\tPIYO{", '',  "\t\t}", "\t}", '})']).to_be_displayed()
+    setlocal smartindent&
+  End
+
+  It automatically inputs pair braces with newline and set indentexpr
+    setlocal ft=ruby et sw=2
+    execute "normal amodule Hoge\<CR>def piyo\<CR>foo {\<CR>\<Esc>"
+    call Expect(['module Hoge', '  def piyo', '    foo {', '', '    }']).to_be_displayed()
+    setlocal ft= et& sw&
+  End
+
+  It can move the cursor
+    execute "normal aHOGE(\"FUGA\<Right>\<Right>\<Esc>"
+    call Expect(['HOGE("FUGA")']).to_be_displayed()
+  End
+
+End
+

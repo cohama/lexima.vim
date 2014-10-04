@@ -50,3 +50,26 @@ function! ErrorMsgOnToBeOrderedAs(_1, _2, rule, rule_order_list)
 endfunction
 
 call themis#helper#expect#define_matcher('to_be_ordered_as', function('ToBeOrderedAs'), function('ErrorMsgOnToBeOrderedAs'))
+
+function! CmdlineInputHook()
+  let g:inner_input = getcmdline()
+  return ''
+endfunction
+
+function! CmdlineInput(str)
+  execute 'normal ' . a:str . "\<C-r>=CmdlineInputHook\<C-v>(\<C-v>)\<CR>"
+  return a:str
+endfunction
+
+call themis#helper#expect#define_matcher('to_change_cmdline_as', 'g:inner_input ==# a:2', '"Expected " . g:inner_input . " to change to " . a:2')
+
+function! ToChangeInputAs(input, shown)
+  %delete _
+  execute 'normal i' . a:input . "\<Esc>"
+  return join(getline(1, '$'), "\n") ==# a:shown
+endfunction
+
+call themis#helper#expect#define_matcher('to_change_input_as',
+\ function('ToChangeInputAs'), '
+\ "Expected is \n" . Visible(a:2) . "\nbut actual is\n" . Visible(join(getline(1, "$"), "\n"))
+\ ')

@@ -1,0 +1,141 @@
+Describe In insert mode,
+
+  Before all
+    new | only!
+  End
+
+  After each
+    new | only!
+  End
+
+  Context leave rules
+
+    Before each
+      setlocal nocindent smartindent
+      call lexima#clear_rules()
+      call lexima#add_rule({'char': '{', 'input_after': '}'})
+      call lexima#add_rule({'char': '*', 'at': '{\%#}', 'input_after': '*'})
+    End
+
+    It can leave one
+      call lexima#add_rule({'char': '*', 'at': '\%#\*}', 'leave': 1})
+      execute "normal i{**;\<Esc>"
+      call Expect(['{**;}']).to_be_displayed()
+    End
+
+    It can leave two
+      call lexima#add_rule({'char': '}', 'at': '\%#\*}', 'leave': 2})
+      execute "normal i{*};\<Esc>"
+      call Expect(['{**};']).to_be_displayed()
+    End
+
+    It can leave till specified char
+      call lexima#add_rule({'char': '}', 'at': '\%#\*}', 'leave': '}'})
+      execute "normal i{*};\<Esc>"
+      call Expect(['{**};']).to_be_displayed()
+    End
+
+    It can leave over cr
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      call lexima#add_rule({'char': '}', 'leave': 1})
+      execute "normal i{\<CR>;}\<Esc>"
+      call Expect(['{', "\t;", '}']).to_be_displayed()
+    End
+
+    It can leave till specified char over cr
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      call lexima#add_rule({'char': '}', 'leave': '}'})
+      execute "normal i{\<CR>;}\<Esc>"
+      call Expect(['{', "\t;", '}']).to_be_displayed()
+    End
+
+    It can leave till specified char over cr
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      call lexima#add_rule({'char': '}', 'leave': '}'})
+      execute "normal o{\<CR>{\<CR>hoge{}}\<Esc>"
+      normal! .
+      call Expect(['', '{', "\t{", "\t\thoge{}", "\t}", '}', '{', "\t{", "\t\thoge{}", "\t}", '}']).to_be_displayed()
+    End
+
+    It can leave till end of line
+      call lexima#add_rule({'char': '"', 'input_after': '"'})
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      call lexima#add_rule({'char': '}', 'leave': '}'})
+      execute "normal o{\<CR>{\<CR>hoge{\"foo{\<C-r>=lexima#insmode#leave_till_eol('')\<CR>;\<Esc>"
+      call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
+      normal! .
+      call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
+    End
+
+  End
+
+  Context delete rules
+
+    Before each
+      new
+      only!
+      call lexima#clear_rules()
+    End
+
+    It can delete one character
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1})
+      execute "normal ohoge(\<BS>\<Esc>"
+      call Expect(['', 'hoge']).to_be_displayed()
+      normal .
+      call Expect(['', 'hoge', 'hoge']).to_be_displayed()
+    End
+
+  End
+
+  Context filetype rules
+
+    Before all
+      call lexima#clear_rules()
+      let s:save_default_rules = g:lexima#default_rules
+      let g:lexima_no_default_rules = 1
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      call lexima#add_rule({'char': '(', 'input_after': 'Ruby!)', 'filetype': 'ruby'})
+      call lexima#add_rule({'char': '(', 'input_after': 'Java script?)', 'filetype': 'javascript'})
+    End
+
+    It is triggered in suitable filetype
+      execute "normal i(\<Esc>"
+      call Expect(['()']).to_be_displayed()
+      enew!
+      setlocal filetype=ruby
+      execute "normal i(\<Esc>"
+      call Expect(['(Ruby!)']).to_be_displayed()
+      enew!
+      setlocal filetype=javascript
+      execute "normal i(\<Esc>"
+      call Expect(['(Java script?)']).to_be_displayed()
+    End
+
+    It falls back to default rule
+      setlocal filetype=ocaml
+      execute "normal i(\<Esc>"
+      call Expect(['()']).to_be_displayed()
+    End
+
+  End
+
+  Context syntax rules
+
+    Before all
+      call lexima#clear_rules()
+      let s:save_default_rules = g:lexima#default_rules
+      let g:lexima_no_default_rules = 1
+      call lexima#add_rule({'char': '"', 'input_after': '"'})
+      call lexima#add_rule({'char': '%', 'input': '%%', 'syntax': 'String'})
+      setlocal filetype=vim
+    End
+
+    It is triggered in suitable syntax
+      execute "normal ilet x = %\"%\<Esc>"
+      call Expect(['let x = %"%%"']).to_be_displayed()
+    End
+
+  End
+
+End
