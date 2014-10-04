@@ -23,6 +23,7 @@ let s:lexima_mapped_chars_on_commandline = []
 let g:lexima#default_rules = [
 \ {'char': '(', 'input_after': ')'},
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
+\ {'char': '<BS>', 'at': '(\%#)', 'delete': 1},
 \ {'char': '{', 'input_after': '}'},
 \ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '}', 'at': '\%#}', 'leave': 1},
@@ -108,11 +109,21 @@ function! s:leximap(char)
     return s:special_char(a:char)
   else
     if has_key(rule, 'leave')
-      echomsg string(rule)
       if type(rule.leave) ==# type('')
-        let input = printf('<C-r>=lexima#leave_till("%s", "%s")<CR>', rule.leave, rule.char)
+        let input = printf('<C-r>=lexima#leave_till("%s", "%s")<CR>', rule.leave, s:map_char(rule.char))
       elseif type(rule.leave) ==# type(0)
-        let input = printf('<C-r>=lexima#leave(%d, "%s")<CR>', rule.leave, rule.char)
+        let input = printf('<C-r>=lexima#leave(%d, "%s")<CR>', rule.leave, s:map_char(rule.char))
+      else
+        throw 'lexima: Not applicable rule (' . string(rule) . ')'
+      endif
+      let input_after = ''
+    elseif has_key(rule, 'delete')
+      if type(rule.delete) ==# type('')
+        let input = printf('<C-r>=lexima#delete_till("%s", "%s", "%s")<CR>',
+        \ rule.delete, s:map_char(get(rule, 'input', rule.char)), s:map_char(rule.char))
+      elseif type(rule.delete) ==# type(0)
+        let input = printf('<C-r>=lexima#delete(%d, "%s", "%s")<CR>',
+        \ rule.delete, s:map_char(get(rule, 'input', rule.char)), s:map_char(rule.char))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
@@ -332,6 +343,53 @@ function! lexima#leave(len, fallback)
   endif
   call setline('.', precursor . postcursor)
   return s:input_stack.pop(a:len)
+endfunction
+
+function! lexima#delete_till(char, input, fallback)
+  let input = s:input_stack.peek(0)
+  let tilllen = match(input, a:char)
+  if tilllen ==# -1
+    return ''
+  else
+    return lexima#delete(tilllen + len(a:char), a:input, a:fallback)
+  endif
+endfunction
+
+function! lexima#delete(len, input, fallback)
+  if s:input_stack.is_empty()
+    return a:fallback
+  endif
+  let input = s:input_stack.peek(a:len)
+  let [bufnum, lnum, col, off] = getpos('.')
+  let cr_count = len(split(input, "\r", 1)) - 1
+  let will_input = substitute(input, "\r", '\\n\\s*', 'g')
+  let illegal = search('\%#' . will_input) ==# 0
+  if illegal
+    return a:fallback
+  endif
+  for i in range(1, cr_count)
+    call setline(lnum+i, substitute(getline(lnum+i), '^\s*', '', ''))
+  endfor
+  if cr_count !=# 0
+    execute 'join! ' . (cr_count + 1)
+  endif
+  call setpos('.', [bufnum, lnum, col, off])
+  let curline = getline('.')
+  let len = len(input) - cr_count
+  if col ==# 1
+    let precursor = ''
+  else
+    let precursor = curline[0:col-2]
+  endif
+  let endcol = col('$') - len
+  if col ==# endcol
+    let postcursor = ''
+  else
+    let postcursor = curline[(col-1+len):-1]
+  endif
+  call setline('.', precursor . postcursor)
+  call s:input_stack.pop(a:len)
+  return s:special_char(a:input)
 endfunction
 
 function! s:regularize(rule)
