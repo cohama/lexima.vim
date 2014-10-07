@@ -119,7 +119,7 @@ Describe default rule
   End
 
   It can move the cursor
-    execute "normal aHOGE(\"FUGA\<Right>\<Right>\<Esc>"
+    execute "normal aHOGE(\"GA\<Left>\<Left>FU\<Esc>"
     call Expect(['HOGE("FUGA")']).to_be_displayed()
   End
 
