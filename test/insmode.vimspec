@@ -53,7 +53,7 @@ Describe In insert mode,
       call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
       call lexima#add_rule({'char': '}', 'leave': '}'})
       execute "normal o{\<CR>{\<CR>hoge{}}\<Esc>"
-      normal! .
+      normal! G.
       call Expect(['', '{', "\t{", "\t\thoge{}", "\t}", '}', '{', "\t{", "\t\thoge{}", "\t}", '}']).to_be_displayed()
     End
 
@@ -63,7 +63,7 @@ Describe In insert mode,
       call lexima#add_rule({'char': '}', 'leave': '}'})
       execute "normal o{\<CR>{\<CR>hoge{\"foo{\<C-r>=lexima#insmode#leave_till_eol('')\<CR>;\<Esc>"
       call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
-      normal! .
+      normal! G.
       call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
     End
 

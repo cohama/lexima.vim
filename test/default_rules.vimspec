@@ -76,25 +76,25 @@ Describe default rule
 
   It with leave can repeat with dots
     for i in range(1, 3)
-      call setline(i, '12345')
+      call setline(i, '()(-)')
     endfor
     normal! gg2|
     execute "normal aHOGE(FUGA(PIYO), x(y\<Esc>"
     normal! j0.
     normal! j$.
-    call Expect(['12HOGE(FUGA(PIYO), x(y))345', '1HOGE(FUGA(PIYO), x(y))2345', '12345HOGE(FUGA(PIYO), x(y))', ]).to_be_displayed()
+    call Expect(['()HOGE(FUGA(PIYO), x(y))(-)', '(HOGE(FUGA(PIYO), x(y)))(-)', '()(-)HOGE(FUGA(PIYO), x(y))', ]).to_be_displayed()
   End
 
   It can repeat if CR input
     execute "normal oHOGE(\<CR>\<Esc>"
-    normal! ..
+    normal! G.G.
     call Expect(['', 'HOGE(', '', ')', 'HOGE(', '', ')', 'HOGE(', '', ')']).to_be_displayed()
   End
 
   It can repeat if CR input with set smartindent
     setlocal smartindent
     execute "normal oHOGE(\<CR>\<Esc>"
-    normal! ..
+    normal! G.G.
     call Expect(['', 'HOGE(', '', ')', 'HOGE(', '', ')', 'HOGE(', '', ')']).to_be_displayed()
     setlocal smartindent&
   End
@@ -119,8 +119,14 @@ Describe default rule
   End
 
   It can move the cursor
-    execute "normal aHOGE(\"GA\<Left>\<Left>FU\<Esc>"
-    call Expect(['HOGE("FUGA")']).to_be_displayed()
+    call Expect("HOGE(\"GA\<Left>\<Left>FU").to_change_input_as('HOGE("FUGA")')
+  End
+
+  It fixes the cursor position when escape the insertmode
+    setlocal smartindent shiftwidth=2 expandtab
+    call Expect("({\<CR>;").to_change_input_as("({\n  ;\n})")
+    call Expect(line('.')).to_equal(2)
+    call Expect(col('.')).to_equal(3)
   End
 
 End

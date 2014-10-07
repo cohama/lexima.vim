@@ -19,7 +19,7 @@ call s:define_highlights()
 call lexima#init()
 
 if !g:lexima_no_map_to_escape
-  inoremap <Esc> <C-r>=lexima#insmode#leave_all('')<CR><Esc>
+  inoremap <Esc> <C-r>=lexima#insmode#escape()<CR><Esc>
 endif
 
 augroup lexima

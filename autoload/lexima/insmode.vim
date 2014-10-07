@@ -223,6 +223,18 @@ function! lexima#insmode#delete_all(fallback)
   return ''
 endfunction
 
+function! lexima#insmode#escape()
+  let pos_save = getpos('.')
+  try
+    let ret = lexima#insmode#leave_all('')
+    let ret .= "\<C-r>=setpos('.', " . string(pos_save) . ")?'':''\<CR>"
+  catch
+    call setpos('.', pos_save)
+    let ret = ''
+  endtry
+  return ret
+endfunction
+
 function! lexima#insmode#delete_till_eol(fallback)
   call lexima#insmode#leave_till_eol(a:fallback)
   return ''
