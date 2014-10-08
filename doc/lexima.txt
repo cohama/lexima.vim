@@ -1,0 +1,278 @@
+*lexima.txt*	Auto close parentheses and repeat by dot dot dot...
+
+Version : 1.0.0
+Author  : cohama / cohama@live.jp
+License : MIT license  {{{
+    Permission is hereby granted, free of charge, to any person obtaining
+    a copy of this software and associated documentation files (the
+    "Software"), to deal in the Software without restriction, including
+    without limitation the rights to use, copy, modify, merge, publish,
+    distribute, sublicense, and/or sell copies of the Software, and to
+    permit persons to whom the Software is furnished to do so, subject to
+    the following conditions:
+    The above copyright notice and this permission notice shall be included
+    in all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+    OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+    MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+    CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+    TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+}}}
+
+==============================================================================
+CONTENTS					*lexima-contents*
+
+INTRODUCTION			|lexima-introduction|
+DEFAULT RULES			|lexima-default-rules|
+INTERFACE			|lexima-interface|
+  VARIABLES			  |lexima-variables|
+  KEY-MAPPINGS			  |lexima-key-mappings|
+  FUNCTIONS			  |lexima-functions|
+CUSTOMIZATION			|lexima-customization|
+  RULES				  |lexima-rules|
+  PRIORITIES			  |lexima-priority|
+  MAKE A REPEATABLE RULE	  |lexima-repeatable-rule|
+TODO				|lexima-todo|
+CHANGELOG			|lexima-changelog|
+
+
+==============================================================================
+INTRODUCTION					*lexima-introduction*
+
+*lexima.vim* is an input manager for Vim.
+Basically, you can automatically close pairs such as (), {}, "", ...
+But in advance, you can also customize the rule to automatically input
+any character on any context.
+
+lexima.vim's one big advantage behind similar auto pair plugins is capability
+of |single-repeat| by dot.
+
+This plugin is inspired by kana's vim-smartinput
+(https://github.com/kana/vim-smartinput)
+
+
+Latest version:
+https://github.com/cohama/lexima.vim
+
+
+==============================================================================
+DEFAULT RULES					*lexima-default-rules*
+
+lexima.vim provides some default rules to input pairs.
+(the cursor position is represented by #)
+
+	Before | Input | After~
+	#      | (     | (#)
+	#      | "     | "#"
+	""#    | "     | """#"""
+	''#    | '     | '''#'''
+	{#}    | <CR>  | {
+	       |       |     #
+	       |       | }
+
+	\#     | [     | \[
+	\#     | "     | \"
+	\#     | '     | \'
+	I#     | 'm    | I'm
+
+	(#)    | )     | ()#
+	'#'    | '     | ''#
+	{#}    | }     | {
+	       |       |
+	       |       | }#
+
+	(#)    | <BS>  | #
+	'#'    | <BS>  | #
+
+
+
+==============================================================================
+INTERFACE					*lexima-interface*
+
+------------------------------------------------------------------------------
+VARIABLES					*lexima-variables*
+
+g:lexima_no_default_rules			*g:lexima_no_default_rules*
+	If it is 1, default rules are not defined.
+	default value: 0
+
+
+g:lexima_no_map_to_escape			*g:lexima_no_map_to_escape*
+	lexima.vim defines the mapping to <Esc> by default.
+	If you don't want to map <Esc>, set this variable to 1.
+	default value: 0
+
+------------------------------------------------------------------------------
+FUNCTIONS					*lexima-functions*
+
+lexima#add_rule({rule})				*lexima#add_rule()*
+	Add the rule to customize the lexima's default behaivor.
+	For more details, see |lexima-rules|
+
+
+lexima#insmode#escape()				*lexima#insmode#escape()*
+	When you end the Insert mode, you should call this function before
+	input <Esc>.
+	By default, <Esc> is mapped to call this function.
+<
+	If you want to escape the Insert mode with jj, you should define the
+	mapping as follows.
+>
+	inoremap jj <C-r>=lexima#insmode#escape()<CR><Esc>
+
+
+
+==============================================================================
+CUSTOMIZATION					*lexima-customization*
+
+------------------------------------------------------------------------------
+RULES						*lexima-rules*
+
+lexima.vim provides highly customizable interface.
+You can define your own rule by using |lexima#add_rule()|.
+A rule is described as a dictionary having the following keys.
+
+char (String) (Required)
+	Define the key to map.
+
+at (Regex) (Optional)
+	The rule is applied when this regular expression matches around the
+	cursor position.
+	'\%#' can be used to represent the cursor position. (See |/\%#|)
+	If omitted, the rule is always applied.
+
+input (String) (Optional)
+	Specify a string to be input when the rule is applied.
+	If omitted, "char" is used.
+
+input_after (String) (Optional)
+	Similar to "input" but this string is inserted after the cursor.
+	This is useful to input closing character such as ), }, ].
+
+mode (String) (Optional)
+	Specify whether the rule is enabled on Insert mode and/or Command-line
+	mode.
+	"mode" is String containing some following characters.
+	  "i": enabled on Insert mode
+	  ":": enabled on Command line mode (Ex-Command)
+	  "/": enabled on Command line mode (forward search)
+	  "?": enabled on Command line mode (backward search)
+	  "c": enabled on Command line mode (same as ":/?")
+	If omitted, "i" is used (only Insert mode).
+
+leave (Number/String) (Optional)
+	Specify the count to move the cursor to the right.
+	However, it is only when there exists characters that is input
+	automatically by lexima.vim within the same Insert mode session.
+	For example, when the following rule is described,
+>
+	call lexima#add_rule({'char': ')', 'at': '\%#)', 'leave': 1})
+<
+	lexima.vim behave as follows.
+
+	Before | Input | After~
+	#      | (     | (#)
+	#      | ()    | ()#
+	#)     | )     | ))#    (the first ')' is not an automated input)
+
+	This key can be taken as String. The cursor moves until the next of
+	the specifying string.
+	For example, the following two rules are the same.
+>
+	call lexima#add_rule({'char': ')', 'at': '\%# )', 'leave': 2})
+	call lexima#add_rule({'char': ')', 'at': '\%# )', 'leave': ')'})
+
+delete (Number/String) (Optional)
+	Specify the count to delete the characters at the right of the cursor.
+	For instance, how many <Del> is input.
+	This is useful to make a dot-repeatable rule.
+	For example,
+>
+	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS><Del>'})
+	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS>', 'delete': 1})
+<
+	Above two rules are similar but the second one is dot-repeatable.
+
+filetype (String/List) (Optional)
+	Specify the list of the filetype where the rule is enabled.
+	If you want to specify only one filetype, you can specify the String
+	value.
+	If omitted, the rule is enabled on any filetype.
+
+syntax (String/List) (Optional)
+	Specify the list of the highlight group name where the rule is enabled.
+	For example,
+      >
+	call lexima#add_rule({'char': 'a', 'input': 'b', 'syntax': 'vimString'})
+	call lexima#add_rule({'char': 'a', 'input': 'b', 'syntax': 'String'})
+	call lexima#add_rule({'char': 'a', 'input': 'b', 'syntax': 'Constant'})
+<
+	When "vimString" links to "String" and "String" links to "Constant",
+	all of above three rules are effective.
+	This key in available only for Insert mode.
+
+priority (Number) (Optional)
+	Specify the priority of the rule. Bigger value has the higher
+	priority. For more details, see |lexima-priorities|.
+
+
+------------------------------------------------------------------------------
+PRIORITIES					*lexima-priorities*
+
+When some of rules are conflicted, what rule to be applied is decided as the
+following priority order.
+
+1. has "filetype"
+2. has "syntax" (only on Insert mode)
+3. "priority" value is higher
+4. the length of "at" is longer
+
+
+------------------------------------------------------------------------------
+MAKE A DOT-REPEATABLE RULE			*lexima-repeatable-rule*
+
+Here is the guide-line to make a rule dot-repeatable. (For Insert mode only)
+
+1. Use "insert_after" instead of <Left>
+>
+	" NG (unrepeatable)
+	call lexima#add_rule({'char': '(', 'input': '()<Left>'})
+
+	" OK (repeatable)
+	call lexima#add_rule({'char': '(', 'input': '(', 'input_after': ')'})
+
+2. Use "leave" instead of <Right>
+>
+	" NG (unrepeatable)
+	call lexima#add_rule({'char': ')', 'at': '\%#)', 'input': '<Right>'})
+
+	" OK (repeatable)
+	call lexima#add_rule({'char': ')', 'at': '\%#)', 'leave': 1})
+
+3. Use "delete" instead of <Del>
+>
+	" NG (unrepeatable)
+	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS><Del>>'})
+
+	" OK (repeatable)
+	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS>', 'delete' : 1})
+
+4. Do not use other special keys (See |ins-special-special|)
+
+
+
+==============================================================================
+TODO						*lexima-todo*
+
+
+
+==============================================================================
+CHANGELOG					*lexima-changelog*
+
+v1.0	First version
+
+==============================================================================
+vim:tw=78:ts=8:ft=help:norl:noet:fen:
