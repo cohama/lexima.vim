@@ -6,10 +6,17 @@ Describe In commandline mode,
 
   It works well on any commandline mode if mode is c
     call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': 'c'})
+    call lexima#add_rule({'char': '<BS>', 'at': '{\%#}', 'input': '<BS><Del>', 'mode': 'c'})
     call Expect(CmdlineInput(":(")).to_change_cmdline_as("(")
     call Expect(CmdlineInput(":hoge((")).to_change_cmdline_as("hoge{(}")
     call Expect(CmdlineInput("/hoge((")).to_change_cmdline_as("hoge{(}")
     call Expect(CmdlineInput("?hoge((")).to_change_cmdline_as("hoge{(}")
+    call Expect(CmdlineInput(":hoge(\<BS>")).to_change_cmdline_as("hoge")
+  End
+
+  It works well when special key is input
+    call lexima#add_rule({'at': '^\%#', 'char': '/', 'input': '<BS>:Unite line', 'mode': '/'})
+    call Expect(CmdlineInput("//")).to_change_cmdline_as("Unite line")
   End
 
   It works well on forward search mode if mode is /

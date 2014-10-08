@@ -19,7 +19,7 @@ endfunction
 
 function! s:define_map(c)
   if index(s:mapped_chars, a:c) ==# -1
-    execute printf("cnoremap %s \<C-\>e<SID>map_impl('%s')\<CR>", a:c, substitute(lexima#string#to_mappable(a:c), "'", "''", 'g'))
+    execute printf("cnoremap <expr> %s <SID>map_impl('%s')", a:c, substitute(lexima#string#to_mappable(a:c), "'", "''", 'g'))
     call add(s:mapped_chars, a:c)
   endif
 endfunction
@@ -30,15 +30,15 @@ function! s:map_impl(char)
   let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
   let rule = s:find_rule(a:char)
   if rule == {}
-    return precursor . lexima#string#to_inputtable(a:char) . postcursor
+    return lexima#string#to_inputtable(a:char)
   else
     if has_key(rule, 'leave')
     else
       let input = rule.input
       let input_after = rule.input_after
     endif
-    call setcmdpos(pos + len(input))
-    return precursor . lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . postcursor
+    call setcmdpos(pos + len(input) - 1)
+    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . "\<C-r>=setcmdpos(" . string(pos + len(input)) . ")?'':''\<CR>"
   endif
 endfunction
 
