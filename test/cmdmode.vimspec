@@ -46,4 +46,13 @@ Describe In commandline mode,
     call Expect(['hoge(']).to_be_displayed()
   End
 
+  It can leave
+    call lexima#add_rule({'char': '(', 'input_after': ')', 'mode': 'c'})
+    call lexima#add_rule({'char': ')', 'at': '\%#)', 'leave': 1, 'mode': 'c'})
+    call lexima#add_rule({'char': '<Space>', 'at': '(\%#)', 'input_after': '<Space>', 'mode': 'c'})
+    call lexima#add_rule({'char': ')', 'at': '\%# )', 'leave': ')', 'mode': 'c'})
+    call Expect(CmdlineInput(":hoge(:);")).to_change_cmdline_as("hoge(:);")
+    call Expect(CmdlineInput(":hoge( :);")).to_change_cmdline_as("hoge( : );")
+  End
+
 End

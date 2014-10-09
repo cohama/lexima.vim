@@ -33,12 +33,24 @@ function! s:map_impl(char)
     return lexima#string#to_inputtable(a:char)
   else
     if has_key(rule, 'leave')
+      if type(rule.leave) ==# type(0)
+        let input = repeat("\<Right>", rule.leave)
+      elseif type(rule.leave) ==# type('')
+        let matchidx = match(cmdline[pos-1:-1], lexima#string#to_inputtable(rule.leave))
+        if matchidx ==# -1
+          let input = a:char
+        else
+          let input = repeat("\<Right>", matchidx + 1)
+        endif
+      else
+        throw 'lexima: Not applicable rule (' . string(rule) . ')'
+      endif
+      let input_after = ''
     else
       let input = rule.input
       let input_after = rule.input_after
     endif
-    call setcmdpos(pos + len(input) - 1)
-    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . repeat("\<Left>", len(input))
+    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . repeat("\<Left>", len(lexima#string#to_inputtable(input_after)))
   endif
 endfunction
 
