@@ -38,7 +38,7 @@ function! s:map_impl(char)
       let input_after = rule.input_after
     endif
     call setcmdpos(pos + len(input) - 1)
-    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . "\<C-r>=setcmdpos(" . string(pos + len(input)) . ")?'':''\<CR>"
+    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . repeat("\<Left>", len(input))
   endif
 endfunction
 
