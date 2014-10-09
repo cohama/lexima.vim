@@ -26,6 +26,9 @@ function! s:define_map(c)
 endfunction
 
 function! s:map_impl(char)
+  if &buftype ==# 'nofile'
+    return lexima#string#to_inputtable(a:char)
+  endif
   let rule = s:find_rule(a:char)
   if rule == {}
     return lexima#string#to_inputtable(a:char)

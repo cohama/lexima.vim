@@ -129,5 +129,10 @@ Describe default rule
     call Expect(col('.')).to_equal(3)
   End
 
+  It is disabled when buftype=nofile
+    setlocal buftype=nofile
+    call Expect('hoge((').to_change_input_as('hoge((')
+  End
+
 End
 
