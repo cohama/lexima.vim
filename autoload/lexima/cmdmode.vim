@@ -48,6 +48,9 @@ function! s:map_impl(char)
       let input_after = ''
     else
       let input = rule.input
+      if has_key(rule, 'delete')
+        let input .= repeat("\<Del>", rule.delete)
+      endif
       let input_after = rule.input_after
     endif
     return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . repeat("\<Left>", len(lexima#string#to_inputtable(input_after)))

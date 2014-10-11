@@ -55,4 +55,11 @@ Describe In commandline mode,
     call Expect(CmdlineInput(":hoge( :);")).to_change_cmdline_as("hoge( : );")
   End
 
+  It can delete
+    call lexima#add_rule({'char': '(', 'input_after': ')', 'mode': 'c'})
+    call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1, 'mode': 'c'})
+    call Expect(CmdlineInput(":(")).to_change_cmdline_as('()')
+    call Expect(CmdlineInput(":(\<BS>")).to_change_cmdline_as('')
+  End
+
 End
