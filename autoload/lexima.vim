@@ -71,9 +71,13 @@ function! lexima#vital()
 endfunction
 
 function! lexima#init()
-    for rule in g:lexima#default_rules
-      call lexima#add_rule(rule)
-    endfor
+  for rule in g:lexima#default_rules
+    call lexima#add_rule(rule)
+  endfor
+  call lexima#add_rule({'char': '(', 'input_after': ')', 'mode': 'c'})
+  call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1, 'mode': 'c'})
+  call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
+  call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
 endfunction
 
 function! lexima#clear_rules()

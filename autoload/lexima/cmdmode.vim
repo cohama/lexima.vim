@@ -6,7 +6,7 @@ let s:rules = lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order
 
 function! lexima#cmdmode#add_rules(rule)
   call s:rules.add(a:rule)
-  call s:define_map(a:rule.char)
+  call s:define_map(a:rule.char, a:rule.char)
 endfunction
 
 function! lexima#cmdmode#clear_rules()
@@ -17,20 +17,24 @@ function! lexima#cmdmode#clear_rules()
   call s:rules.clear()
 endfunction
 
-function! s:define_map(c)
-  if index(s:mapped_chars, a:c) ==# -1
-    execute printf("cnoremap <expr> %s <SID>map_impl('%s')", a:c, substitute(lexima#string#to_mappable(a:c), "'", "''", 'g'))
-    call add(s:mapped_chars, a:c)
+function! s:define_map(char, mapping)
+  if index(s:mapped_chars, a:char) ==# -1
+    execute printf("cnoremap <expr> %s <SID>map_impl(%s, %s)", a:char, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)))
+    call add(s:mapped_chars, a:char)
   endif
 endfunction
 
-function! s:map_impl(char)
+function! lexima#cmdmode#define_altanative_key(char, mapping)
+  call s:define_map(a:char, a:mapping)
+endfunction
+
+function! s:map_impl(char, fallback)
   let pos = getcmdpos()
   let cmdline = getcmdline()
   let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
   let rule = s:find_rule(a:char)
   if rule == {}
-    return lexima#string#to_inputtable(a:char)
+    return lexima#string#to_inputtable(a:fallback)
   else
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type(0)

@@ -138,4 +138,16 @@ Describe In insert mode,
 
   End
 
+  Context altanative keys
+
+    It can be defined
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1})
+      call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
+      call Expect("(").to_change_input_as('()')
+      call Expect("(\<C-h>").to_change_input_as('')
+    End
+
+  End
+
 End

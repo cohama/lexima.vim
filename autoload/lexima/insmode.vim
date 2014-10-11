@@ -7,7 +7,7 @@ let s:rules = lexima#sortedlist#new([], function('lexima#insmode#_priority_order
 
 function! lexima#insmode#add_rules(rule)
   call s:rules.add(a:rule)
-  call s:define_map(a:rule.char)
+  call s:define_map(a:rule.char, a:rule.char)
 endfunction
 
 function! lexima#insmode#clear_rules()
@@ -18,35 +18,40 @@ function! lexima#insmode#clear_rules()
   call s:rules.clear()
 endfunction
 
-function! s:define_map(c)
-  if index(s:mapped_chars, a:c) ==# -1
-    execute printf("inoremap <silent> %s \<C-r>=<SID>map_impl(%s)\<CR>", a:c, string(lexima#string#to_mappable(a:c)))
-    call add(s:mapped_chars, a:c)
+function! s:define_map(char, mapping)
+  if index(s:mapped_chars, a:char) ==# -1
+    execute printf("inoremap <silent> %s \<C-r>=<SID>map_impl(%s, %s)\<CR>", a:char, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)))
+    call add(s:mapped_chars, a:char)
   endif
 endfunction
 
-function! s:map_impl(char)
+function! lexima#insmode#define_altanative_key(char, mapping)
+  call s:define_map(a:char, a:mapping)
+endfunction
+
+function! s:map_impl(char, fallback)
+  let fallback = lexima#string#to_inputtable(a:fallback)
   if &buftype ==# 'nofile'
-    return lexima#string#to_inputtable(a:char)
+    return fallback
   endif
   let rule = s:find_rule(a:char)
   if rule == {}
-    return lexima#string#to_inputtable(a:char)
+    return fallback
   else
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(rule.char)))
+        let input = printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(a:fallback)))
       elseif type(rule.leave) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(rule.char)))
+        let input = printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(a:fallback)))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
       let input_after = ''
     elseif has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(rule.char)))
+        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:fallback)))
       elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(rule.char)))
+        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:fallback)))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
@@ -164,7 +169,6 @@ function! s:input(input, input_after)
   call s:input_stack.push(a:input_after)
   return a:input
 endfunction
-
 
 function! lexima#insmode#leave(len, fallback)
   if s:input_stack.is_empty()
