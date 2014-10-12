@@ -17,7 +17,7 @@ DEFAULT RULES
 -------------
 
 lexima.vim provides some default rules to input pairs.
-(the cursor position is represented by #)
+(the cursor position is represented by |)
 
 Before | Input | After
 -------|-------|--------
