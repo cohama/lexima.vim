@@ -8,13 +8,6 @@ let g:loaded_lexima = 1
 
 let g:lexima_no_default_rules = get(g:, 'lexima_no_default_rules', 0)
 let g:lexima_no_map_to_escape = get(g:, 'lexima_no_escape_mapping', 0)
-let g:lexima_highlight_future_input = get(g:, 'lexima_disable_highlight', 0)
-
-function! s:define_highlights()
-  hi def link leximaFutureInput MatchParen
-endfunction
-call s:define_highlights()
-
 
 call lexima#init()
 
