@@ -1,0 +1,51 @@
+Describe endwise rule
+
+  Before all
+    call lexima#clear_rules()
+    let g:lexima_enable_basic_rules = 0
+    let g:lexima_enable_newline_rules = 0
+    let g:lexima_enable_endwise_rules = 1
+    call lexima#init()
+    new | only!
+  End
+
+  After each
+    new | only!
+  End
+
+  After all
+    let g:lexima_enable_basic_rules = 1
+    let g:lexima_enable_newline_rules = 1
+    let g:lexima_enable_endwise_rules = 0
+  End
+
+  Context in vim
+
+    Before all
+      new | setf vim
+    End
+
+    It should input end word
+      call Expect("fu x()\<CR>").to_change_input_as("fu x()\n\nendfu")
+      call Expect("function s:hoge(fuga)\<CR>").to_change_input_as("function s:hoge(fuga)\n\nendfunction")
+      call Expect("if x ~=# '\%(ji\|\)ja;s/j'\<CR>").to_change_input_as("if x ~=# '\%(ji\|\)ja;s/j'\n\nendif")
+    End
+  End
+
+  Context in ruby
+
+    Before all
+      new | setf ruby
+    End
+
+    It should input end word
+      call Expect("def hoge()\<CR>").to_change_input_as("def hoge()\n\nend")
+      call Expect("hoge do |i|\<CR>").to_change_input_as("hoge do |i|\n\nend")
+      call Expect("# Yes, I do\<CR>").to_change_input_as("# Yes, I do\n#")
+      call Expect("if x\<CR>").to_change_input_as("if x\n\nend")
+      call Expect("a = if x\<CR>").to_change_input_as("a = if x\n\n    end")
+    End
+
+  End
+
+End

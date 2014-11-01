@@ -87,6 +87,11 @@ function! lexima#init()
       call lexima#add_rule(rule)
     endfor
   endif
+  if g:lexima_enable_endwise_rules
+    for rule in lexima#endwise_rule#make()
+      call lexima#add_rule(rule)
+    endfor
+  endif
   call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
   call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
 endfunction
