@@ -7,7 +7,7 @@ let s:rules = lexima#sortedlist#new([], function('lexima#insmode#_priority_order
 
 function! lexima#insmode#add_rules(rule)
   call s:rules.add(a:rule)
-  call s:define_map(a:rule.char, a:rule.char)
+  call s:define_map(a:rule.char, a:rule.char, '', '')
 endfunction
 
 function! lexima#insmode#clear_rules()
@@ -18,15 +18,27 @@ function! lexima#insmode#clear_rules()
   call s:rules.clear()
 endfunction
 
-function! s:define_map(char, mapping)
+function! s:define_map(char, mapping, prehook, posthook)
   if index(s:mapped_chars, a:char) ==# -1
-    execute printf("inoremap <silent> %s \<C-r>=<SID>map_impl(%s, %s)\<CR>", a:char, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)))
+    execute printf("inoremap <silent> %s %s\<C-r>=<SID>map_impl(%s, %s)\<CR>%s", a:char, a:prehook, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)), a:posthook)
     call add(s:mapped_chars, a:char)
   endif
 endfunction
 
 function! lexima#insmode#define_altanative_key(char, mapping)
-  call s:define_map(a:char, a:mapping)
+  call s:define_map(a:char, a:mapping, '', '')
+endfunction
+
+function! lexima#insmode#map_hook(when, char, expr)
+  let i = index(s:mapped_chars, a:char)
+  if i !=# -1
+    call remove(s:mapped_chars, i)
+  endif
+  if a:when ==# 'before'
+    call s:define_map(a:char, a:char, a:expr, '')
+  elseif a:when ==# 'after'
+    call s:define_map(a:char, a:char, '', a:expr)
+  endif
 endfunction
 
 function! s:map_impl(char, fallback)

@@ -150,4 +150,34 @@ Describe In insert mode,
 
   End
 
+  Context map pre-hook
+
+    Before all
+      call lexima#init()
+    End
+
+    It can be triggered before key pressed
+      call lexima#insmode#map_hook('before', '(', '*')
+      call Expect("(").to_change_input_as('*()')
+      call lexima#insmode#map_hook('before', '[', "\<C-r>=1+1\<CR>")
+      call Expect("[").to_change_input_as('2[]')
+    End
+
+  End
+
+  Context map post-hook
+
+    Before all
+      call lexima#init()
+    End
+
+    It can be triggered after key pressed
+      call lexima#insmode#map_hook('after', '(', '+')
+      call Expect("(").to_change_input_as('(+)')
+      call lexima#insmode#map_hook('after', '[', "\<C-r>=1+2\<CR>")
+      call Expect("[").to_change_input_as('[3]')
+    End
+
+  End
+
 End
