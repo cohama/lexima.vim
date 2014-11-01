@@ -125,8 +125,13 @@ function! lexima#insmode#_priority_order(rule1, rule2)
 endfunction
 
 function! s:get_syntax_link_chain()
-  let synname = synIDattr(synID(line('.'), col('.'), 1), "name")
+  let l = line('.')
+  let c = col('.')
+  let synname = synIDattr(synID(l, c, 1), "name")
   let result_stack = []
+  if synname ==# '' && c > 1
+    let synname = synIDattr(synID(l, c-1, 1), "name")
+  endif
   while 1
     if synname ==# ''
       break
