@@ -19,6 +19,7 @@ if !g:lexima_no_map_to_escape
 endif
 
 augroup lexima
+  autocmd!
   autocmd InsertEnter * call lexima#insmode#clear_stack()
   autocmd ColorScheme * call s:define_highlights()
 augroup END
