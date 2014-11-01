@@ -7,7 +7,7 @@ endif
 let g:loaded_lexima = 1
 
 let g:lexima_no_default_rules = get(g:, 'lexima_no_default_rules', 0)
-let g:lexima_no_map_to_escape = get(g:, 'lexima_no_escape_mapping', 0)
+let g:lexima_no_map_to_escape = get(g:, 'lexima_no_map_to_escape', 0)
 let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
 let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 0)
