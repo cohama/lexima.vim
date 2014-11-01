@@ -2,6 +2,7 @@ let s:expect = themis#helper('expect')
 
 syntax on
 filetype plugin indent on
+set noswapfile
 
 function! Expect(v)
   return s:expect(a:v)
