@@ -77,6 +77,7 @@ function! lexima#vital()
 endfunction
 
 function! lexima#init()
+  call lexima#clear_rules()
   if g:lexima_enable_basic_rules
     for rule in g:lexima#default_rules
       call lexima#add_rule(rule)
