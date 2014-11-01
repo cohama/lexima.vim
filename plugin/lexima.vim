@@ -17,7 +17,6 @@ endif
 augroup lexima
   autocmd!
   autocmd InsertEnter * call lexima#insmode#clear_stack()
-  autocmd ColorScheme * call s:define_highlights()
 augroup END
 
 let &cpo = s:save_cpo
