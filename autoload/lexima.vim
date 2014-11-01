@@ -25,18 +25,15 @@ let g:lexima#default_rules = [
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
 \ {'char': ')', 'at': '\%#\n\s*)', 'leave': 2},
 \ {'char': '<BS>', 'at': '(\%#)', 'delete': 1},
-\ {'char': '<CR>', 'at': '(\%#)', 'input_after': '<CR>'},
 \ {'char': '{', 'input_after': '}'},
 \ {'char': '}', 'at': '\%#}', 'leave': 1},
 \ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '<BS>', 'at': '{\%#}', 'delete': 1},
-\ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ {'char': '[', 'input_after': ']'},
 \ {'char': '[', 'at': '\\\%#'},
 \ {'char': ']', 'at': '\%#]', 'leave': 1},
 \ {'char': ']', 'at': '\%#\n\s*]', 'leave': 2},
 \ {'char': '<BS>', 'at': '\[\%#\]', 'delete': 1},
-\ {'char': '<CR>', 'at': '\[\%#\]', 'input_after': '<CR>'},
 \ ]
 let g:lexima#default_rules += [
 \ {'char': '"', 'input_after': '"'},
@@ -66,14 +63,30 @@ let g:lexima#default_rules += [
 \ {'char': '<BS>', 'at': '```\%#```', 'input': '<BS><BS><BS>', 'delete': 3},
 \ ]
 
+let g:lexima#newline_rules = [
+\ {'char': '<CR>', 'at': '(\%#)', 'input_after': '<CR>'},
+\ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)'},
+\ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
+\ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}'},
+\ {'char': '<CR>', 'at': '\[\%#\]', 'input_after': '<CR>'},
+\ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
+\ ]
+
 function! lexima#vital()
   return s:lexima_vital
 endfunction
 
 function! lexima#init()
-  for rule in g:lexima#default_rules
-    call lexima#add_rule(rule)
-  endfor
+  if g:lexima_enable_basic_rules
+    for rule in g:lexima#default_rules
+      call lexima#add_rule(rule)
+    endfor
+  endif
+  if g:lexima_enable_newline_rules
+    for rule in g:lexima#newline_rules
+      call lexima#add_rule(rule)
+    endfor
+  endif
   call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
   call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
 endfunction
