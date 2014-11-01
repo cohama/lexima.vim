@@ -5,6 +5,12 @@ let s:V = vital#of('lexima')
 let s:L = s:V.import('Data.List')
 let s:S = s:V.import('Data.String')
 
+let g:lexima_no_default_rules = get(g:, 'lexima_no_default_rules', 0)
+let g:lexima_no_map_to_escape = get(g:, 'lexima_no_map_to_escape', 0)
+let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
+let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
+let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 0)
+
 let s:lexima_vital = {
 \ 'L' : s:L,
 \ 'S' : s:S
