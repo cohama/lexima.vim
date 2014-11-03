@@ -1,6 +1,6 @@
 *lexima.txt*	Auto close parentheses and repeat by dot dot dot...
 
-Version : 1.0.0
+Version : 1.1
 Author  : cohama / cohama@live.jp
 License : MIT license  {{{
     Permission is hereby granted, free of charge, to any person obtaining
@@ -62,30 +62,89 @@ https://github.com/cohama/lexima.vim
 DEFAULT RULES					*lexima-default-rules*
 
 lexima.vim provides some default rules to input pairs.
-(the cursor position is represented by #)
+(the cursor position is represented by |)
 
-	Before | Input | After~
-	#      | (     | (#)
-	#      | "     | "#"
-	""#    | "     | """#"""
-	''#    | '     | '''#'''
-	{#}    | <CR>  | {
-	       |       |     #
-	       |       | }
 
-	\#     | [     | \[
-	\#     | "     | \"
-	\#     | '     | \'
-	I#     | 'm    | I'm
+------------------------------------------------------------------------------
+BASIC RULES					*lexima-basic-rules*
 
-	(#)    | )     | ()#
-	'#'    | '     | ''#
-	{#}    | }     | {
-	       |       |
-	       |       | }#
+	Before        Input         After~
+	------------------------------------
+	|             (             (|)
+	------------------------------------
+	|             "             "|"
+	------------------------------------
+	""|           "             """|"""
+	------------------------------------
+	''|           '             '''|'''
+	------------------------------------
+	\|            [             \[|
+	------------------------------------
+	\|            "             \"|
+	------------------------------------
+	\|            '             \'|
+	------------------------------------
+	I|            'm            I'm|
+	------------------------------------
+	(|)           )             ()|
+	------------------------------------
+	'|'           '             ''|
+	------------------------------------
+	(|)           <BS>          |
+	------------------------------------
+	'|'           <BS>          |
+	------------------------------------
 
-	(#)    | <BS>  | #
-	'#'    | <BS>  | #
+	and much more... (See. g:lexima#default_rules at autoload/lexima.vim)
+
+
+------------------------------------------------------------------------------
+NEWLINE RULES					*lexima-newline-rules*
+
+	Before        Input         After~
+	------------------------------------
+	{|}           <CR>          {
+	                                |
+	                            }
+	------------------------------------
+	{|            <CR>          {
+	                                |
+	                            }
+	------------------------------------
+	{             }             {
+	    |
+	}                           }|
+	------------------------------------
+
+	Same as () and []
+
+
+------------------------------------------------------------------------------
+ENDWISE RULES					*lexima-endwise-rules*
+
+These rules are inspired by tpope's vim-endwise.
+
+In ruby filetype,
+
+	Before        Input         After~
+	--------------------------------------
+	if x == 42|   <CR>          if x == 42
+	                                |
+	                            end
+	--------------------------------------
+	def foo()|    <CR>          def foo()
+	                                |
+	                            end
+	--------------------------------------
+	bar.each do|  <CR>          bar.each do
+	                                |
+	                            end
+	--------------------------------------
+
+	and same as "module", "class", "while" and so on.
+
+In vim filetype, "function", "if", "while" ... rules are available.
+And also you can use in sh (zsh) such as "if", "case".
 
 
 
@@ -96,7 +155,9 @@ INTERFACE					*lexima-interface*
 VARIABLES					*lexima-variables*
 
 g:lexima_no_default_rules			*g:lexima_no_default_rules*
-	If it is 1, default rules are not defined.
+	If it is 1, default rules are not available.
+	You can explicitly set default rules by calling
+	|lexima#set_default_rules()|.
 	default value: 0
 
 
@@ -105,8 +166,38 @@ g:lexima_no_map_to_escape			*g:lexima_no_map_to_escape*
 	If you don't want to map <Esc>, set this variable to 1.
 	default value: 0
 
+
+g:lexima_enable_basic_rules			*g:lexima_enable_basic_rules*
+	If it is 1, |lexima-basic-rules| are enabled by default.
+	default value: 1
+
+
+g:lexima_enable_newline_rules			*g:lexima_enable_newline_rules*
+	If it is 1, |lexima-newline-rules| are enabled by default.
+	default value: 1
+
+
+g:lexima_enable_endwise_rules			*g:lexima_enable_endwise_rules*
+	If it is 1, |lexima-endwise-rules| are enabled by default.
+	default value: 1
+
+
 ------------------------------------------------------------------------------
 FUNCTIONS					*lexima-functions*
+
+lexima#set_default_rules({rule})		*lexima#set_default_rules()*
+	Clear all rules and set default rules.
+	This is useful to write your vimrc as reloadable.
+>
+	" in vimrc
+	let g:lexima_no_default_rules = 1
+	call lexima#set_default_rules()
+
+	" reload vimrc
+	:source $MYVIMRC
+
+	" Everything is OK
+
 
 lexima#add_rule({rule})				*lexima#add_rule()*
 	Add the rule to customize the lexima's default behaivor.
@@ -116,10 +207,10 @@ lexima#add_rule({rule})				*lexima#add_rule()*
 lexima#insmode#escape()				*lexima#insmode#escape()*
 	When you end the Insert mode, you should call this function before
 	input <Esc>.
-	By default, <Esc> is mapped to call this function.
+	By default, <Esc> is mapped to this function.
 <
-	If you want to escape the Insert mode with jj, you should define the
-	mapping as follows.
+	If you want to escape from the Insert mode with jj, you should define
+	mapping as follow.
 >
 	inoremap jj <C-r>=lexima#insmode#escape()<CR><Esc>
 
@@ -271,6 +362,10 @@ TODO						*lexima-todo*
 
 ==============================================================================
 CHANGELOG					*lexima-changelog*
+
+v1.1	Categorize rules into |lexima-basic-rules| and |lexima-newline-rules|
+	Add |lexima-endwise-rules|.
+	Add |lexima#set_default_rules()|.
 
 v1.0	First version
 
