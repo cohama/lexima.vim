@@ -153,7 +153,7 @@ Describe In insert mode,
   Context map pre-hook
 
     Before all
-      call lexima#init()
+      call lexima#set_default_rules()
     End
 
     It can be triggered before key pressed
@@ -168,7 +168,7 @@ Describe In insert mode,
   Context map post-hook
 
     Before all
-      call lexima#init()
+      call lexima#set_default_rules()
     End
 
     It can be triggered after key pressed

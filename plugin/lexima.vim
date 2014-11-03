@@ -7,7 +7,7 @@ endif
 let g:loaded_lexima = 1
 
 if !get(g:, 'lexima_no_default_rules', 0)
-  call lexima#init()
+  call lexima#set_default_rules()
 endif
 
 if !g:lexima_no_map_to_escape

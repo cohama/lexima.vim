@@ -83,6 +83,12 @@ function! lexima#vital()
 endfunction
 
 function! lexima#init()
+  echomsg "lexima#init() has been depricated."
+  echomsg "Please use lexima#set_default_rules() instead."
+  return lexima#set_default_rules()
+endfunction
+
+function! lexima#set_default_rules()
   call lexima#clear_rules()
   if g:lexima_enable_basic_rules
     for rule in g:lexima#default_rules
