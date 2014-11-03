@@ -29,16 +29,13 @@ let g:lexima#default_rules = [
 \ {'char': '(', 'input_after': ')'},
 \ {'char': '(', 'at': '\\\%#'},
 \ {'char': ')', 'at': '\%#)', 'leave': 1},
-\ {'char': ')', 'at': '\%#\n\s*)', 'leave': 2},
 \ {'char': '<BS>', 'at': '(\%#)', 'delete': 1},
 \ {'char': '{', 'input_after': '}'},
 \ {'char': '}', 'at': '\%#}', 'leave': 1},
-\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '<BS>', 'at': '{\%#}', 'delete': 1},
 \ {'char': '[', 'input_after': ']'},
 \ {'char': '[', 'at': '\\\%#'},
 \ {'char': ']', 'at': '\%#]', 'leave': 1},
-\ {'char': ']', 'at': '\%#\n\s*]', 'leave': 2},
 \ {'char': '<BS>', 'at': '\[\%#\]', 'delete': 1},
 \ ]
 let g:lexima#default_rules += [
@@ -72,10 +69,13 @@ let g:lexima#default_rules += [
 let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '(\%#)', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)'},
+\ {'char': ')', 'at': '\%#\n\s*)', 'leave': 2},
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}'},
+\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '<CR>', 'at': '\[\%#\]', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
+\ {'char': ']', 'at': '\%#\n\s*]', 'leave': 2},
 \ ]
 
 function! lexima#vital()
