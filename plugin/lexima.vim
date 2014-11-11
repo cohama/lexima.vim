@@ -11,7 +11,7 @@ if !get(g:, 'lexima_no_default_rules', 0)
 endif
 
 if !g:lexima_no_map_to_escape
-  inoremap <Esc> <C-r>=lexima#insmode#escape()<CR><Esc>
+  inoremap <silent> <Esc> <C-r>=lexima#insmode#escape()<CR><Esc>
 endif
 
 augroup lexima
