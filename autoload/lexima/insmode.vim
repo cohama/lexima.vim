@@ -177,7 +177,9 @@ function! s:input(input, input_after)
         let indent_depth = 0
       endif
     else
-      let indent_depth = eval(&indentexpr)
+      call setpos('.', [0, lnum+i, 0, 0])
+      let v:lnum = lnum+i
+      let indent_depth = eval(&l:indentexpr)
     endif
     " TODO: in case of 'noexpandtab'
     call setline(lnum+i, repeat(' ', indent_depth) . getline(lnum+i))
