@@ -10,6 +10,10 @@ function! lexima#endwise_rule#make()
     call add(rules, s:make_rule('^\s*' . at . '\>.*\%#', 'end' . at, 'vim', []))
   endfor
 
+  for at in ['aug', 'augroup']
+    call add(rules, s:make_rule('^\s*' . at . '\s\+.\+\%#', at . ' END', 'vim', []))
+  endfor
+
   " ruby
   call add(rules, s:make_rule('^\s*\%(module\|def\|class\|if\|unless\|for\|while\|until\|case\)\>\%(.*[^.:@$]\<end\>\)\@!.*\%#', 'end', 'ruby', []))
   call add(rules, s:make_rule('^\s*\%(begin\)\s*\%#', 'end', 'ruby', []))
