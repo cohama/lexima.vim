@@ -10,7 +10,7 @@ if !get(g:, 'lexima_no_default_rules', 0)
   call lexima#set_default_rules()
 endif
 
-if !g:lexima_no_map_to_escape
+if !get(g:, 'lexima_no_map_to_escape', 0)
   inoremap <silent> <Esc> <C-r>=lexima#insmode#escape()<CR><Esc>
 endif
 
