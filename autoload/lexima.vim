@@ -82,12 +82,6 @@ function! lexima#vital()
   return s:lexima_vital
 endfunction
 
-function! lexima#init()
-  echomsg "lexima#init() has been depricated."
-  echomsg "Please use lexima#set_default_rules() instead."
-  return lexima#set_default_rules()
-endfunction
-
 function! lexima#set_default_rules()
   call lexima#clear_rules()
   if g:lexima_enable_basic_rules
@@ -145,6 +139,13 @@ function! lexima#get_rules()
     return []
   endif
 endfunction
+
+function! lexima#init()
+endfunction
+
+if !g:lexima_no_default_rules
+  call lexima#set_default_rules()
+endif
 
 let &cpo = s:save_cpo
 unlet s:save_cpo

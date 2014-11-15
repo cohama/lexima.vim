@@ -6,11 +6,9 @@ if exists('g:loaded_lexima')
 endif
 let g:loaded_lexima = 1
 
-if !get(g:, 'lexima_no_default_rules', 0)
-  call lexima#set_default_rules()
-endif
+call lexima#init()
 
-if !get(g:, 'lexima_no_map_to_escape', 0)
+if !g:lexima_no_map_to_escape
   inoremap <silent> <Esc> <C-r>=lexima#insmode#escape()<CR><Esc>
 endif
 
