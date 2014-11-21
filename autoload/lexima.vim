@@ -69,13 +69,10 @@ let g:lexima#default_rules += [
 let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '(\%#)', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)'},
-\ {'char': ')', 'at': '\%#\n\s*)', 'leave': 2},
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}'},
-\ {'char': '}', 'at': '\%#\n\s*}', 'leave': 2},
 \ {'char': '<CR>', 'at': '\[\%#\]', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
-\ {'char': ']', 'at': '\%#\n\s*]', 'leave': 2},
 \ ]
 
 function! lexima#vital()

@@ -38,9 +38,6 @@ Describe default rule
     call Expect("'''';").to_change_input_as("'''''';")
     call Expect('``').to_change_input_as('``')
     call Expect('````;').to_change_input_as('``````;')
-    call Expect("(\<CR>)").to_change_input_as("(\n\n)")
-    call Expect("{\<CR>}").to_change_input_as("{\n\n}")
-    call Expect("[\<CR>]").to_change_input_as("[\n\n]")
   End
 
   It should delete the pairs when backspace is input
