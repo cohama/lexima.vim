@@ -157,10 +157,12 @@ g:lexima_no_default_rules			*g:lexima_no_default_rules*
 	default value: 0
 
 
-g:lexima_no_map_to_escape			*g:lexima_no_map_to_escape*
-	lexima.vim defines the mapping to <Esc> by default.
-	If you don't want to map <Esc>, set this variable to 1.
-	default value: 0
+g:lexima_map_escape			        *g:lexima_map_escape*
+	lexima.vim defines a insert mode mapping to <Esc> by default.
+	If you don't want to map <Esc>, set this variable to another
+	left-hand-side, or '' to not create a default mapping to
+	|lexima#insmode#escape()|.
+	default value: '<Esc>'
 
 
 g:lexima_enable_basic_rules			*g:lexima_enable_basic_rules*
@@ -204,12 +206,9 @@ lexima#insmode#escape()				*lexima#insmode#escape()*
 	When you end the Insert mode, you should call this function before
 	input <Esc>.
 	By default, <Esc> is mapped to this function.
-<
-	If you want to escape from the Insert mode with jj, you should define
-	mapping as follow.
->
-	inoremap jj <C-r>=lexima#insmode#escape()<CR><Esc>
 
+	If you want to escape from the insert mode with e.g. jj, you should
+	define |g:lexima_map_escape| accordingly.
 
 
 ==============================================================================
