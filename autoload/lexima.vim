@@ -10,7 +10,6 @@ let g:lexima_no_map_to_escape = get(g:, 'lexima_no_map_to_escape', 0)
 let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
 let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 1)
-let g:lexima_fix_arrow_keys_behavior = get(g:, 'lexima_fix_arrow_keys_behavior', 1)
 
 let s:lexima_vital = {
 \ 'L' : s:L,
