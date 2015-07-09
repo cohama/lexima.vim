@@ -181,8 +181,19 @@ function! s:input(input, input_after)
       let v:lnum = lnum+i
       let indent_depth = eval(&l:indentexpr)
     endif
-    " TODO: in case of 'noexpandtab'
-    call setline(lnum+i, repeat(' ', indent_depth) . getline(lnum+i))
+
+    let sw = &shiftwidth
+    if sw == 0
+      let sw = &tabstop
+    endif
+
+    if &expandtab
+      let indent = repeat(' ', indent_depth)
+    else
+      let indent = repeat("\t", indent_depth / sw)
+    endif
+
+    call setline(lnum+i, indent . getline(lnum+i))
   endfor
   call setpos('.', [bufnum, lnum, col, off])
   call s:input_stack.push(a:input_after)
