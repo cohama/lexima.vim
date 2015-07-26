@@ -208,7 +208,7 @@ function! lexima#insmode#leave(len, fallback)
   let [bufnum, lnum, col, off] = getpos('.')
   let cr_count = len(split(input, "\r", 1)) - 1
   let will_input = substitute(input, "\r", '\\n\\s\\*', 'g')
-  let illegal = search('\V\%#' . will_input) ==# 0
+  let illegal = search('\V\%#' . will_input, 'bcWn') ==# 0
   if illegal
     return lexima#string#to_inputtable(a:fallback)
   endif
