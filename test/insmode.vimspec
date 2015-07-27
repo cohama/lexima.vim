@@ -36,6 +36,7 @@ Describe In insert mode,
     End
 
     It can leave over cr
+      call lexima#add_rule({'char': '<cr>', 'at': '*[{\%#', 'input_after': '<CR>'})
       call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
       call lexima#add_rule({'char': '}', 'leave': 1})
       execute "normal i{\<CR>;}\<Esc>"

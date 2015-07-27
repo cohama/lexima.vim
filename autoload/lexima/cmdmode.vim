@@ -25,7 +25,8 @@ function! s:define_map(char, mapping)
 endfunction
 
 function! lexima#cmdmode#define_altanative_key(char, mapping)
-  call s:define_map(a:char, a:mapping)
+  let char = lexima#string#to_upper_specialkey(a:char)
+  call s:define_map(char, a:mapping)
 endfunction
 
 function! s:map_impl(char, fallback)

@@ -26,18 +26,20 @@ function! s:define_map(char, mapping, prehook, posthook)
 endfunction
 
 function! lexima#insmode#define_altanative_key(char, mapping)
-  call s:define_map(a:char, a:mapping, '', '')
+  let char = lexima#string#to_upper_specialkey(a:char)
+  call s:define_map(char, a:mapping, '', '')
 endfunction
 
 function! lexima#insmode#map_hook(when, char, expr)
-  let i = index(s:mapped_chars, a:char)
+  let char = lexima#string#to_upper_specialkey(a:char)
+  let i = index(s:mapped_chars, char)
   if i !=# -1
     call remove(s:mapped_chars, i)
   endif
   if a:when ==# 'before'
-    call s:define_map(a:char, a:char, a:expr, '')
+    call s:define_map(char, char, a:expr, '')
   elseif a:when ==# 'after'
-    call s:define_map(a:char, a:char, '', a:expr)
+    call s:define_map(char, char, '', a:expr)
   endif
 endfunction
 

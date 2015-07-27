@@ -9,6 +9,10 @@ function! lexima#string#to_mappable(str)
   return substitute(a:str, '<', '<LT>', 'g')
 endfunction
 
+function! lexima#string#to_upper_specialkey(str) abort
+  return substitute(a:str, '\v\<\zs[A-Za-z\-]{-}\ze\>', '\=toupper(submatch(0))', 'g')
+endfunction
+
 " recursively take n characters
 " Param: take_many(string, n, m, ...)
 " Returns: [taken1 (with n length), taken2 (with m length), ..., rest]
