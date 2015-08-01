@@ -198,7 +198,7 @@ lexima#set_default_rules({rule})		*lexima#set_default_rules()*
 
 
 lexima#add_rule({rule})				*lexima#add_rule()*
-	Add the rule to customize the lexima's default behaivor.
+	Add the rule to customize the lexima's default behavior.
 	For more details, see |lexima-rules|
 
 
