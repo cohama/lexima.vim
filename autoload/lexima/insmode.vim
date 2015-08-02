@@ -1,6 +1,8 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
+let s:B = lexima#vital().B
+
 let s:input_stack = lexima#charstack#new()
 let s:mapped_chars = []
 let s:rules = lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
@@ -45,7 +47,7 @@ endfunction
 
 function! s:map_impl(char, fallback)
   let fallback = lexima#string#to_inputtable(a:fallback)
-  if &buftype ==# 'nofile'
+  if &buftype ==# 'nofile' && !s:B.is_cmdwin()
     return fallback
   endif
   let rule = s:find_rule(a:char)
