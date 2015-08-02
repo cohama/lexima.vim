@@ -198,7 +198,7 @@ lexima#set_default_rules({rule})		*lexima#set_default_rules()*
 
 
 lexima#add_rule({rule})				*lexima#add_rule()*
-	Add the rule to customize the lexima's default behaivor.
+	Add the rule to customize the lexima's default behavior.
 	For more details, see |lexima-rules|
 
 
@@ -324,26 +324,26 @@ Here is the guide-line to make a rule dot-repeatable. (For Insert mode only)
 
 1. Use "insert_after" instead of <Left>
 >
-	" NG (unrepeatable)
+	" Bad (unrepeatable)
 	call lexima#add_rule({'char': '(', 'input': '()<Left>'})
 
-	" OK (repeatable)
+	" Good (repeatable)
 	call lexima#add_rule({'char': '(', 'input': '(', 'input_after': ')'})
 
 2. Use "leave" instead of <Right>
 >
-	" NG (unrepeatable)
+	" Bad (unrepeatable)
 	call lexima#add_rule({'char': ')', 'at': '\%#)', 'input': '<Right>'})
 
-	" OK (repeatable)
+	" Good (repeatable)
 	call lexima#add_rule({'char': ')', 'at': '\%#)', 'leave': 1})
 
 3. Use "delete" instead of <Del>
 >
-	" NG (unrepeatable)
+	" Bad (unrepeatable)
 	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS><Del>>'})
 
-	" OK (repeatable)
+	" Good (repeatable)
 	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS>', 'delete' : 1})
 
 4. Do not use other special keys (See |ins-special-special|)
