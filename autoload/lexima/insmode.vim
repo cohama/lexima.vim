@@ -7,6 +7,10 @@ let s:input_stack = lexima#charstack#new()
 let s:mapped_chars = []
 let s:rules = lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
 
+function! lexima#insmode#get_rules()
+  return s:rules.as_list()
+endfunction
+
 function! lexima#insmode#add_rules(rule)
   call s:rules.add(a:rule)
   call s:define_map(a:rule.char, a:rule.char, '', '')

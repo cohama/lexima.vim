@@ -147,14 +147,6 @@ function! s:regularize(rule)
   return reg_rule
 endfunction
 
-function! lexima#get_rules()
-  if exists('s:lexima_rules')
-    return s:lexima_rules.as_list()
-  else
-    return []
-  endif
-endfunction
-
 function! lexima#init()
 endfunction
 

@@ -30,6 +30,9 @@ function! s:contains(dict, dict2)
 endfunction
 
 function! ToBeOrderedAs(rule, rule_order_list)
+  if len(a:rule) != len(a:rule_order_list)
+    return 0
+  endif
   for i in range(len(a:rule))
     if !s:contains(a:rule[i], a:rule_order_list[i])
       return 0

@@ -13,7 +13,7 @@ Describe rule order
       call lexima#add_rule({'at': '', 'char': 'l', 'input': 'L'})
       call lexima#add_rule({'char': 'h', 'input': 'H'})
 
-      call Expect(lexima#get_rules()).to_be_ordered_as([
+      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
       \ {'at': 'hoge\%#hoge', 'char': 'j', 'input': 'J'},
       \ {'at': 'fuga\%#', 'char': 'kk', 'input': 'KK'},
       \ {'at': 'hoge\%#', 'char': 'k', 'input': 'K'},
@@ -27,7 +27,7 @@ Describe rule order
       call lexima#add_rule({'char': '2', 'priority': 1})
       call lexima#add_rule({'char': '3'})
 
-      call Expect(lexima#get_rules()).to_be_ordered_as([
+      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
       \ {'char': '2', 'priority': 1},
       \ {'char': '3'},
       \ {'char': '1'},
@@ -41,7 +41,7 @@ Describe rule order
       call lexima#add_rule({'char': '4', 'syntax': 'Number'})
       call lexima#add_rule({'char': '5'})
 
-      call Expect(lexima#get_rules()).to_be_ordered_as([
+      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
       \ {'char': '4', 'syntax': 'Number'},
       \ {'char': '3', 'syntax': ['String', 'Number']},
       \ {'char': '2', 'syntax': 'String'},
@@ -57,7 +57,7 @@ Describe rule order
       call lexima#add_rule({'char': '4', 'filetype': 'ruby'})
       call lexima#add_rule({'char': '5'})
 
-      call Expect(lexima#get_rules()).to_be_ordered_as([
+      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
       \ {'char': '4', 'filetype': 'ruby'},
       \ {'char': '3', 'filetype': ['vim', 'ruby']},
       \ {'char': '2', 'filetype': 'vim'},
@@ -77,7 +77,7 @@ Describe rule order
       call lexima#add_rule({'char': '8', 'priority': 10})
       call lexima#add_rule({'char': '9'})
 
-      call Expect(lexima#get_rules()).to_be_ordered_as([
+      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
       \ {'char': '4', 'filetype': 'ocaml', 'syntax': 'String', 'priority': 1},
       \ {'char': '3', 'filetype': 'vim', 'syntax': 'Number'},
       \ {'char': '7', 'filetype': 'python', 'priority': 120},
