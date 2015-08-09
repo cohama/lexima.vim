@@ -10,6 +10,7 @@ let g:lexima_no_default_rules = get(g:, 'lexima_no_default_rules', 0)
 let g:lexima_no_map_to_escape = get(g:, 'lexima_no_map_to_escape', 0)
 let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
 let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
+let g:lexima_enable_space_rules = get(g:, 'lexima_enable_space_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 1)
 
 let s:lexima_vital = {
@@ -77,6 +78,15 @@ let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
 \ ]
 
+let g:lexima#space_rules = [
+\ {'char': '<Space>', 'at': '(\%#)', 'input_after': '<Space>'},
+\ {'char': '<BS>', 'at': '( \%# )', 'delete': 1},
+\ {'char': '<Space>', 'at': '{\%#}', 'input_after': '<Space>'},
+\ {'char': '<BS>', 'at': '{ \%# }', 'delete': 1},
+\ {'char': '<Space>', 'at': '\[\%#\]', 'input_after': '<Space>'},
+\ {'char': '<BS>', 'at': '[ \%# ]', 'delete': 1},
+\ ]
+
 function! lexima#vital()
   return s:lexima_vital
 endfunction
@@ -90,6 +100,11 @@ function! lexima#set_default_rules()
   endif
   if g:lexima_enable_newline_rules
     for rule in g:lexima#newline_rules
+      call lexima#add_rule(rule)
+    endfor
+  endif
+  if g:lexima_enable_space_rules
+    for rule in g:lexima#space_rules
       call lexima#add_rule(rule)
     endfor
   endif

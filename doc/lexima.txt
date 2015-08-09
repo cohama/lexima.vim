@@ -116,6 +116,19 @@ NEWLINE RULES					*lexima-newline-rules*
 
 
 ------------------------------------------------------------------------------
+SPACE RULES					*lexima-space-rules*
+
+	Before        Input         After~
+	------------------------------------
+	{|}           <Space>       { | }
+	------------------------------------
+	{|            <Space>       { | }
+	------------------------------------
+
+	Same as () and []
+
+
+------------------------------------------------------------------------------
 ENDWISE RULES					*lexima-endwise-rules*
 
 These rules are inspired by tpope's vim-endwise.
@@ -172,6 +185,11 @@ g:lexima_enable_basic_rules			*g:lexima_enable_basic_rules*
 
 g:lexima_enable_newline_rules			*g:lexima_enable_newline_rules*
 	If it is 1, |lexima-newline-rules| are enabled by default.
+	default value: 1
+
+
+g:lexima_enable_space_rules			*g:lexima_enable_space_rules*
+	If it is 1, |lexima-space-rules| are enabled by default.
 	default value: 1
 
 
