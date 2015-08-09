@@ -113,8 +113,12 @@ function! lexima#set_default_rules()
       call lexima#add_rule(rule)
     endfor
   endif
-  call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
-  call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
+  if maparg('<C-h>', 'i') ==# ''
+    call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
+  end
+  if maparg('<C-h>', 'c') ==# ''
+    call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
+  end
 endfunction
 
 function! lexima#clear_rules()
