@@ -118,7 +118,7 @@ Describe default rule
   It automatically inputs pair braces with newline and set indentexpr
     setlocal ft=ruby et sw=2
     execute "normal amodule Hoge\<CR>def piyo\<CR>foo {\<CR>\<Esc>"
-    call Expect(['module Hoge', '  def piyo', '    foo {', '', '    }']).to_be_displayed()
+    call Expect(['module Hoge', '  def piyo', '    foo {', '', '    }', '  end', 'end']).to_be_displayed()
     setlocal ft= et& sw&
   End
 
