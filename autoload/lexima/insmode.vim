@@ -54,6 +54,9 @@ function! s:map_impl(char, fallback)
   if &buftype ==# 'nofile' && !s:B.is_cmdwin()
     return fallback
   endif
+  if exists('b:lexima_disabled') && b:lexima_disabled
+    return fallback
+  endif
   let rule = s:find_rule(a:char)
   if rule == {}
     return fallback

@@ -197,6 +197,13 @@ g:lexima_enable_endwise_rules			*g:lexima_enable_endwise_rules*
 	If it is 1, |lexima-endwise-rules| are enabled by default.
 	default value: 1
 
+b:lexima_disabled				*g:lexima_disabled*
+	If it is 1, all of lexima rules are disabled on the buffer.
+	(local to buffer)
+>
+	" Disable lexima.vim on clojure
+	autocmd FileType clojure let b:lexima_disabled = 0
+
 
 ------------------------------------------------------------------------------
 FUNCTIONS					*lexima-functions*

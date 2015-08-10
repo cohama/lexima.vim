@@ -138,5 +138,10 @@ Describe default rule
     call Expect('hoge((').to_change_input_as('hoge((')
   End
 
+  It is disabled when b:lexima_disabled = 1
+    let b:lexima_disabled = 1
+    call Expect('hoge((').to_change_input_as('hoge((')
+  End
+
 End
 
