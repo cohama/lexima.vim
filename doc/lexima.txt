@@ -35,6 +35,7 @@ CUSTOMIZATION			|lexima-customization|
   RULES				  |lexima-rules|
   PRIORITIES			  |lexima-priority|
   MAKE A REPEATABLE RULE	  |lexima-repeatable-rule|
+  TIPS				  |lexima-tips|
 TODO				|lexima-todo|
 CHANGELOG			|lexima-changelog|
 
@@ -372,6 +373,15 @@ Here is the guide-line to make a rule dot-repeatable. (For Insert mode only)
 	call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'input': '<BS>', 'delete' : 1})
 
 4. Do not use other special keys (See |ins-special-special|)
+
+
+------------------------------------------------------------------------------
+TIPS						*lexima-tips*
+
+1. I want to use <C-h> in the same manner as <BS>!
+>
+	imap <C-h> <BS>
+	cmap <C-h> <BS>
 
 
 

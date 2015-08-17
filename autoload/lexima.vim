@@ -113,8 +113,6 @@ function! lexima#set_default_rules()
       call lexima#add_rule(rule)
     endfor
   endif
-  call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
-  call lexima#cmdmode#define_altanative_key('<C-h>', '<BS>')
 endfunction
 
 function! lexima#clear_rules()
