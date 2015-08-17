@@ -74,7 +74,7 @@ let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)'},
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}'},
-\ {'char': '<CR>', 'at': '\[\%#\]', 'input_after': '<CR>'},
+\ {'char': '<CR>', 'at': '\[\%#]', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
 \ ]
 
@@ -83,8 +83,8 @@ let g:lexima#space_rules = [
 \ {'char': '<BS>', 'at': '( \%# )', 'delete': 1},
 \ {'char': '<Space>', 'at': '{\%#}', 'input_after': '<Space>'},
 \ {'char': '<BS>', 'at': '{ \%# }', 'delete': 1},
-\ {'char': '<Space>', 'at': '\[\%#\]', 'input_after': '<Space>'},
-\ {'char': '<BS>', 'at': '[ \%# ]', 'delete': 1},
+\ {'char': '<Space>', 'at': '\[\%#]', 'input_after': '<Space>'},
+\ {'char': '<BS>', 'at': '\[ \%# ]', 'delete': 1},
 \ ]
 
 function! lexima#vital()
