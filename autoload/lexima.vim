@@ -113,6 +113,7 @@ function! lexima#set_default_rules()
       call lexima#add_rule(rule)
     endfor
   endif
+  call lexima#insmode#map_hook('before', '<Space>', '<C-]>')
 endfunction
 
 function! lexima#clear_rules()
