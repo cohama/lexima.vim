@@ -33,7 +33,7 @@ INTERFACE			|lexima-interface|
   FUNCTIONS			  |lexima-functions|
 CUSTOMIZATION			|lexima-customization|
   RULES				  |lexima-rules|
-  PRIORITIES			  |lexima-priority|
+  PRIORITIES			  |lexima-priorities|
   MAKE A REPEATABLE RULE	  |lexima-repeatable-rule|
   TIPS				  |lexima-tips|
 TODO				|lexima-todo|
@@ -329,6 +329,7 @@ syntax (String/List) (Optional)
 priority (Number) (Optional)
 	Specify the priority of the rule. Bigger value has the higher
 	priority. For more details, see |lexima-priorities|.
+	If omitted, the priority is treated as 0
 
 
 ------------------------------------------------------------------------------
