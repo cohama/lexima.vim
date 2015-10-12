@@ -107,13 +107,16 @@ function! lexima#set_default_rules()
     for rule in g:lexima#space_rules
       call lexima#add_rule(rule)
     endfor
+    if v:version > 703 || (v:version == 703 && has('patch489'))
+      " because ^] has been drawn on screen in old vim
+      call lexima#insmode#map_hook('before', '<Space>', '<C-]>')
+    endif
   endif
   if g:lexima_enable_endwise_rules
     for rule in lexima#endwise_rule#make()
       call lexima#add_rule(rule)
     endfor
   endif
-  call lexima#insmode#map_hook('before', '<Space>', '<C-]>')
 endfunction
 
 function! lexima#clear_rules()
