@@ -23,7 +23,7 @@ lexima.vim provides some default rules to input pairs.
 If `g:lexima_enable_basic_rules` is `1`, the following rules are enabled.
 (default value: `1`)
 
-    Before        Input         After~
+    Before        Input         After
     ------------------------------------
     |             (             (|)
     ------------------------------------
@@ -56,7 +56,7 @@ and much more... (See `g:lexima#default_rules` at `autoload/lexima.vim`)
 If `g:lexima_enable_newline_rules` is `1`, the following rules are enabled.
 (default value: `1`)
 
-    Before        Input         After~
+    Before        Input         After
     ------------------------------------
     {|}           <CR>          {
                                     |
