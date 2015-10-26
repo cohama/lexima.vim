@@ -256,6 +256,10 @@ at (Regex) (Optional)
 	'\%#' can be used to represent the cursor position. (See |/\%#|)
 	If omitted, the rule is always applied.
 
+except (Regex) (Optional)
+	Like "at", but the rule is not applied when this regular expression
+	matches around the cursor position.
+
 input (String) (Optional)
 	Specify a string to be input when the rule is applied.
 	If omitted, "char" is used.

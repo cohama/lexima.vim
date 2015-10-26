@@ -71,11 +71,11 @@ let g:lexima#default_rules += [
 
 let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '(\%#)', 'input_after': '<CR>'},
-\ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)'},
+\ {'char': '<CR>', 'at': '(\%#$', 'input_after': '<CR>)', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1\)'},
 \ {'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'},
-\ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}'},
+\ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1\}'},
 \ {'char': '<CR>', 'at': '\[\%#]', 'input_after': '<CR>'},
-\ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]'},
+\ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1\]'},
 \ ]
 
 let g:lexima#space_rules = [
