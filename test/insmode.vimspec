@@ -70,6 +70,36 @@ Describe In insert mode,
 
   End
 
+  Context except rules
+
+    Before each
+      new
+      only!
+      setlocal filetype=ruby
+
+      call lexima#clear_rules()
+      let except = '^\(\s*\).\+\n\%(\1\s.*\n\)*\1}'
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#', 'input': '<CR>', 'input_after': '<CR>}', 'except': except})
+    End
+
+    It can except applying the rule by cursor context
+      let lines = ["\tloop {", "\t\tfoo", "\t}"]
+      put =lines
+      1delete _
+      execute "normal ggA\<CR>bar\<Esc>"
+      call Expect(["\tloop {", "\t\tbar", "\t\tfoo", "\t}"]).to_be_displayed()
+    End
+
+    It works on normal situation
+      let lines = ["\tloop {"]
+      put =lines
+      1delete _
+      execute "normal ggA\<CR>bar\<Esc>"
+      call Expect(["\tloop {", "\t\tbar", "\t}"]).to_be_displayed()
+    End
+
+  End
+
   Context delete rules
 
     Before each
