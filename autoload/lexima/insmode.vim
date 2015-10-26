@@ -93,7 +93,9 @@ function! s:find_rule(char)
   for rule in s:rules.as_list()
     if rule.char ==# a:char
       let endpos = searchpos(rule.at, 'bcWn')
-      if endpos !=# [0, 0]
+      let excepted = has_key(rule, 'except') ?
+      \              searchpos(rule.except, 'bcWn') !=# [0, 0] : 0
+      if endpos !=# [0, 0] && !excepted
         if empty(rule.filetype) || index(rule.filetype, &filetype) >=# 0
           if empty(rule.syntax)
             return rule
