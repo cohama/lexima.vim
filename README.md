@@ -131,7 +131,7 @@ If you type `foo("bar`, you get
 foo("bar")
 ```
 
-and you type `0.`, you finally get
+and once you type `0.`, you finally get
 ```
 foo("bar")foo("bar")
 ```
