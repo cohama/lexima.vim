@@ -36,7 +36,7 @@ Describe endwise rule
 
   Context in ruby
 
-    Before all
+    Before each
       new | setf ruby
     End
 
@@ -48,6 +48,14 @@ Describe endwise rule
       call Expect("a = if x\<CR>").to_change_input_as("a = if x\n\n    end")
     End
 
+    It should input end word for various do blocks
+      call Expect("hoge do\<CR>").to_change_input_as("hoge do\n\nend")
+      call Expect("hoge do |i, &block|\<CR>").to_change_input_as("hoge do |i, &block|\n\nend")
+      call Expect("hoge do |*args|\<CR>").to_change_input_as("hoge do |*args|\n\nend")
+      call Expect("hoge do |name: :default|\<CR>").to_change_input_as("hoge do |name: :default|\n\nend")
+      call Expect("hoge do |regex: /abc|def/| end\<CR>").to_change_input_as("hoge do |regex: /abc|def/| end\n")
+      call Expect("hoge do |i| end\<CR>").to_change_input_as("hoge do |i| end\n")
+    End
   End
 
 End

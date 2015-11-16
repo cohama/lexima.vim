@@ -17,7 +17,7 @@ function! lexima#endwise_rule#make()
   " ruby
   call add(rules, s:make_rule('^\s*\%(module\|def\|class\|if\|unless\|for\|while\|until\|case\)\>\%(.*[^.:@$]\<end\>\)\@!.*\%#', 'end', 'ruby', []))
   call add(rules, s:make_rule('^\s*\%(begin\)\s*\%#', 'end', 'ruby', []))
-  call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\%(\s*|\k\+\%(\s*,\s*\k\+\)*|\)\?\s*\%#', 'end', 'ruby', []))
+  call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\%(\s*|.*|\)\?\s*\%#', 'end', 'ruby', []))
   call add(rules, s:make_rule('\<\%(if\|unless\)\>.*\%#', 'end', 'ruby', 'rubyConditionalExpression'))
 
   " sh
