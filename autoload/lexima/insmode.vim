@@ -90,13 +90,14 @@ endfunction
 
 function! s:find_rule(char)
   let syntax_chain = s:get_syntax_link_chain()
+  let searchlimit = max([0, line('.') - 20])
   for rule in s:rules.as_list()
-    if rule.char ==# a:char
-      let endpos = searchpos(rule.at, 'bcWn')
-      let excepted = has_key(rule, 'except') ?
-      \              searchpos(rule.except, 'bcWn') !=# [0, 0] : 0
-      if endpos !=# [0, 0] && !excepted
-        if empty(rule.filetype) || index(rule.filetype, &filetype) >=# 0
+    if empty(rule.filetype) || index(rule.filetype, &filetype) >=# 0
+      if rule.char ==# a:char
+        let endpos = searchpos(rule.at, 'bcWn', searchlimit)
+        let excepted = has_key(rule, 'except') ?
+        \              searchpos(rule.except, 'bcWn', searchlimit) !=# [0, 0] : 0
+        if endpos !=# [0, 0] && !excepted
           if empty(rule.syntax)
             return rule
           else
