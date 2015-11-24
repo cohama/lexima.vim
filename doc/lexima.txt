@@ -202,8 +202,8 @@ b:lexima_disabled				*b:lexima_disabled*
 	If it is 1, all of lexima rules are disabled on the buffer.
 	(local to buffer)
 >
-	" Disable lexima.vim on clojure
-	autocmd FileType clojure let b:lexima_disabled = 0
+	" Disable lexima.vim in clojure buffers
+	autocmd FileType clojure let b:lexima_disabled = 1
 
 
 ------------------------------------------------------------------------------
