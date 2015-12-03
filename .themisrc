@@ -11,6 +11,8 @@ endfunction
 function! Visible(s)
   let s = substitute(a:s, ' ', '_', 'g')
   let s = substitute(s, '\t', '>---', 'g')
+  let s = substitute(s, '\r', '<CR>\r', 'g')
+  let s = substitute(s, '\n', '<NL>\n', 'g')
   return s
 endfunction
 
