@@ -26,7 +26,14 @@ endfunction
 
 function! s:define_map(char, mapping, prehook, posthook)
   if index(s:mapped_chars, a:char) ==# -1
-    execute printf("inoremap <silent> %s %s\<C-r>=<SID>map_impl(%s, %s)\<CR>%s", a:char, a:prehook, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)), a:posthook)
+    let expand_abbr = ''
+    if v:version > 703 || (v:version == 703 && has('patch489'))
+      " because ^] has been drawn on screen in old vim
+      if lexima#string#to_inputtable(a:char) !~ '.*\k$'
+        let expand_abbr = '<C-]>'
+      endif
+    endif
+    execute printf("inoremap <silent> %s %s%s\<C-r>=<SID>map_impl(%s, %s)\<CR>%s", a:char, expand_abbr, a:prehook, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)), a:posthook)
     call add(s:mapped_chars, a:char)
   endif
 endfunction

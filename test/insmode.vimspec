@@ -1,3 +1,4 @@
+call themis#helper('command')
 Describe In insert mode,
 
   Before all
@@ -207,6 +208,29 @@ Describe In insert mode,
       call Expect("(").to_change_input_as('(+)')
       call lexima#insmode#map_hook('after', '[', "\<C-r>=1+2\<CR>")
       call Expect("[").to_change_input_as('[3]')
+    End
+
+  End
+
+  Context abbreviation expansion
+
+    Before all
+      iabbrev foo bar
+      call lexima#set_default_rules()
+    End
+
+    After all
+      iunabbrev foo
+    End
+
+    It can be triggered after key pressed
+      if v:version <= 703 && !has('patch489')
+        Skip "abbreviation expansion is enabled at Vim 7.3.489 or later"
+      endif
+      call Expect('foo ').to_change_input_as('bar ')
+      call Expect('foo(').to_change_input_as('bar()')
+      call Expect("foo'").to_change_input_as("bar'")
+      call Expect("foo\<CR>").to_change_input_as("bar\n")
     End
 
   End
