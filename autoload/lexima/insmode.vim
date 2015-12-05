@@ -251,7 +251,7 @@ function! lexima#insmode#leave_till(char, fallback)
   let input = s:input_stack.peek(0)
   let tilllen = match(input, a:char)
   if tilllen ==# -1
-    return ''
+    return lexima#string#to_inputtable(a:fallback)
   else
     return lexima#insmode#leave(tilllen + len(a:char), a:fallback)
   endif
