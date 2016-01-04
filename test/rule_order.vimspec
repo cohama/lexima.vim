@@ -7,86 +7,83 @@ Describe rule order
     End
 
     It with implicit priority are sorted by at length
-      call lexima#add_rule({'at': 'hoge\%#', 'char': 'k', 'input': 'K'})
-      call lexima#add_rule({'at': 'fuga\%#', 'char': 'kk', 'input': 'KK'})
-      call lexima#add_rule({'at': 'hoge\%#hoge', 'char': 'j', 'input': 'J'})
-      call lexima#add_rule({'at': '', 'char': 'l', 'input': 'L'})
-      call lexima#add_rule({'char': 'h', 'input': 'H'})
+      call lexima#add_rule({'input': '1', 'at': 'hoge\%#', 'char': 'k'})
+      call lexima#add_rule({'input': '2', 'at': 'fuga\%#', 'char': 'k'})
+      call lexima#add_rule({'input': '3', 'at': 'hoge\%#hoge', 'char': 'k'})
+      call lexima#add_rule({'input': '4', 'at': '', 'char': 'k'})
+      call lexima#add_rule({'input': '5', 'char': 'k'})
 
-      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
-      \ {'at': 'hoge\%#hoge', 'char': 'j', 'input': 'J'},
-      \ {'at': 'fuga\%#', 'char': 'kk', 'input': 'KK'},
-      \ {'at': 'hoge\%#', 'char': 'k', 'input': 'K'},
-      \ {'char': 'h', 'input': 'H'},
-      \ {'at': '', 'char': 'l', 'input': 'L'}
+      call Expect(lexima#insmode#get_map_rules('k')).to_be_ordered_as([
+      \ {'input': '3', 'at': 'hoge\%#hoge', 'char': 'k'},
+      \ {'input': '2', 'at': 'fuga\%#', 'char': 'k'},
+      \ {'input': '1', 'at': 'hoge\%#', 'char': 'k'},
+      \ {'input': '5', 'char': 'k'},
+      \ {'input': '4', 'at': '', 'char': 'k'}
       \ ])
     End
 
     It prior explicit priority
-      call lexima#add_rule({'char': '1'})
-      call lexima#add_rule({'char': '2', 'priority': 1})
-      call lexima#add_rule({'char': '3'})
+      call lexima#add_rule({'input': '1', 'char': '1'})
+      call lexima#add_rule({'input': '2', 'char': '1', 'priority': 1})
+      call lexima#add_rule({'input': '3', 'char': '1'})
 
-      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
-      \ {'char': '2', 'priority': 1},
-      \ {'char': '3'},
-      \ {'char': '1'},
+      call Expect(lexima#insmode#get_map_rules('1')).to_be_ordered_as([
+      \ {'input': '2', 'char': '1', 'priority': 1},
+      \ {'input': '3', 'char': '1'},
+      \ {'input': '1', 'char': '1'},
       \ ])
     End
 
     It prior syntax
-      call lexima#add_rule({'char': '1'})
-      call lexima#add_rule({'char': '2', 'syntax': 'String'})
-      call lexima#add_rule({'char': '3', 'syntax': ['String', 'Number']})
-      call lexima#add_rule({'char': '4', 'syntax': 'Number'})
-      call lexima#add_rule({'char': '5'})
+      call lexima#add_rule({'input': '1', 'char': '1'})
+      call lexima#add_rule({'input': '2', 'char': '1', 'syntax': 'String'})
+      call lexima#add_rule({'input': '3', 'char': '1', 'syntax': ['String', 'Number']})
+      call lexima#add_rule({'input': '4', 'char': '1', 'syntax': 'Number'})
+      call lexima#add_rule({'input': '5', 'char': '1'})
 
-      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
-      \ {'char': '4', 'syntax': 'Number'},
-      \ {'char': '3', 'syntax': ['String', 'Number']},
-      \ {'char': '2', 'syntax': 'String'},
-      \ {'char': '5'},
-      \ {'char': '1'}
+      call Expect(lexima#insmode#get_map_rules('1')).to_be_ordered_as([
+      \ {'input': '4', 'char': '1', 'syntax': 'Number'},
+      \ {'input': '3', 'char': '1', 'syntax': ['String', 'Number']},
+      \ {'input': '2', 'char': '1', 'syntax': 'String'},
+      \ {'input': '5', 'char': '1'},
+      \ {'input': '1', 'char': '1'}
       \ ])
     End
 
     It prior filetype
-      call lexima#add_rule({'char': '1'})
-      call lexima#add_rule({'char': '2', 'filetype': 'vim'})
-      call lexima#add_rule({'char': '3', 'filetype': ['vim', 'ruby']})
-      call lexima#add_rule({'char': '4', 'filetype': 'ruby'})
-      call lexima#add_rule({'char': '5'})
+      call lexima#add_rule({'input': '1', 'char': '1'})
+      call lexima#add_rule({'input': '2', 'char': '1', 'filetype': 'vim'})
+      call lexima#add_rule({'input': '3', 'char': '1', 'filetype': ['vim', 'ruby']})
+      call lexima#add_rule({'input': '4', 'char': '1', 'filetype': 'ruby'})
+      setlocal filetype=vim
 
-      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
-      \ {'char': '4', 'filetype': 'ruby'},
-      \ {'char': '3', 'filetype': ['vim', 'ruby']},
-      \ {'char': '2', 'filetype': 'vim'},
-      \ {'char': '5'},
-      \ {'char': '1'}
+      call Expect(lexima#insmode#get_map_rules('1')).to_be_ordered_as([
+      \ {'input': '3', 'char': '1', 'filetype': ['vim', 'ruby']},
+      \ {'input': '2', 'char': '1', 'filetype': 'vim'},
+      \ {'input': '1', 'char': '1'},
       \ ])
     End
 
-    It prior filetype syntax priority atlength
-      call lexima#add_rule({'char': '1'})
-      call lexima#add_rule({'char': '2', 'priority': 1000})
-      call lexima#add_rule({'char': '3', 'filetype': 'vim', 'syntax': 'Number'})
-      call lexima#add_rule({'char': '4', 'filetype': 'ocaml', 'syntax': 'String', 'priority': 1})
-      call lexima#add_rule({'char': '5', 'syntax': 'String'})
-      call lexima#add_rule({'char': '6', 'filetype': 'ruby'})
-      call lexima#add_rule({'char': '7', 'filetype': 'python', 'priority': 120})
-      call lexima#add_rule({'char': '8', 'priority': 10})
-      call lexima#add_rule({'char': '9'})
+    It prior filetype syntax priority at-length
+      call lexima#add_rule({'input': '1', 'char': '1'})
+      call lexima#add_rule({'input': '2', 'char': '1', 'priority': 1000})
+      call lexima#add_rule({'input': '3', 'char': '1', 'filetype': 'vim', 'syntax': 'Number'})
+      call lexima#add_rule({'input': '4', 'char': '1', 'filetype': 'vim', 'syntax': 'String', 'priority': 1})
+      call lexima#add_rule({'input': '5', 'char': '1', 'syntax': 'String'})
+      call lexima#add_rule({'input': '6', 'char': '1', 'filetype': 'vim'})
+      call lexima#add_rule({'input': '7', 'char': '1', 'filetype': 'vim', 'priority': 120})
+      call lexima#add_rule({'input': '8', 'char': '1', 'priority': 10})
+      call lexima#add_rule({'input': '9', 'char': '1', 'priority': 10, 'filetype': 'python'})
 
-      call Expect(lexima#insmode#get_rules()).to_be_ordered_as([
-      \ {'char': '4', 'filetype': 'ocaml', 'syntax': 'String', 'priority': 1},
-      \ {'char': '3', 'filetype': 'vim', 'syntax': 'Number'},
-      \ {'char': '7', 'filetype': 'python', 'priority': 120},
-      \ {'char': '6', 'filetype': 'ruby'},
-      \ {'char': '5', 'syntax': 'String'},
-      \ {'char': '2', 'priority': 1000},
-      \ {'char': '8', 'priority': 10},
-      \ {'char': '9'},
-      \ {'char': '1'}
+      call Expect(lexima#insmode#get_map_rules('1')).to_be_ordered_as([
+      \ {'input': '4', 'char': '1', 'filetype': 'vim', 'syntax': 'String', 'priority': 1},
+      \ {'input': '3', 'char': '1', 'filetype': 'vim', 'syntax': 'Number'},
+      \ {'input': '7', 'char': '1', 'filetype': 'vim', 'priority': 120},
+      \ {'input': '6', 'char': '1', 'filetype': 'vim'},
+      \ {'input': '5', 'char': '1', 'syntax': 'String'},
+      \ {'input': '2', 'char': '1', 'priority': 1000},
+      \ {'input': '8', 'char': '1', 'priority': 10},
+      \ {'input': '1', 'char': '1'},
       \ ])
     End
 

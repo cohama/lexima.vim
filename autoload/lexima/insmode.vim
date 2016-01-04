@@ -2,62 +2,132 @@ let s:save_cpo = &cpo
 set cpo&vim
 
 let s:B = lexima#vital().B
+let s:L = lexima#vital().L
 
 let s:input_stack = lexima#charstack#new()
-let s:mapped_chars = []
-let s:rules = lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
+
+" mapping dictionary. e.g.
+" {
+"   '(': {
+"     'rules': {
+"       '_': [{'at': ...}, {'at': ...}, {}, ...],
+"       'haskell': [{'at': ...}, {'at': ...}, {}, ...],
+"       'javascript': [{'at': ...}, {'at': ...}, {}, ...],
+"       'ruby': [{'at': ...}, {'at': ...}, {}, ...],
+"     },
+"     'prehooks': ['x', 'y', 'z']
+"     'posthooks': ['x', 'y', 'z']
+"   }
+" }
+let s:map_dict = {}
 
 function! lexima#insmode#get_rules()
-  return s:rules.as_list()
-endfunction
-
-function! lexima#insmode#add_rules(rule)
-  call s:rules.add(a:rule)
-  call s:define_map(a:rule.char, a:rule.char, '', '')
-endfunction
-
-function! lexima#insmode#clear_rules()
-  for c in s:mapped_chars
-    execute "iunmap " . c
+  echomsg 'lexima: lexima#insmode#get_rules() has been deprecated! Use lexima#insmode#get_map_rules() instead.'
+  let ret = []
+  for char in keys(s:map_dict)
+    let ret += s:map_dict[char].rules.as_list()
   endfor
-  let s:mapped_chars = []
-  call s:rules.clear()
+  return ret
 endfunction
 
-function! s:define_map(char, mapping, prehook, posthook)
-  if index(s:mapped_chars, a:char) ==# -1
-    let expand_abbr = ''
-    if v:version > 703 || (v:version == 703 && has('patch489'))
-      " because ^] has been drawn on screen in old vim
-      if lexima#string#to_inputtable(a:char) !~ '.*\k$'
-        let expand_abbr = '<C-]>'
-      endif
+function! lexima#insmode#get_map_rules(char) abort
+  let char = lexima#string#to_upper_specialkey(a:char)
+  if has_key(s:map_dict, char)
+    if &filetype == '' || !s:L.has(keys(s:map_dict[char].rules), &filetype)
+      return s:map_dict[char].rules['_'].as_list()
+    else
+      return s:map_dict[char].rules[&filetype].as_list() +
+      \ s:map_dict[char].rules['_'].as_list()
     endif
-    execute printf("inoremap <silent> %s %s%s\<C-r>=<SID>map_impl(%s, %s)\<CR>%s", a:char, expand_abbr, a:prehook, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)), a:posthook)
-    call add(s:mapped_chars, a:char)
+  else
+    return []
   endif
 endfunction
 
-function! lexima#insmode#define_altanative_key(char, mapping)
+function! lexima#insmode#add_rules(rule) abort
+  " Expect a:rule to be regularized.
+  if has_key(s:map_dict, a:rule.char)
+    let newchar_flg = 0
+  else
+    let s:map_dict[a:rule.char] = {
+    \ 'rules': {
+    \     '_': lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
+    \   },
+    \ 'prehooks': [],
+    \ 'posthooks': [],
+    \ }
+    " Add <C-]> prehook to expand abbreviation.
+    if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
+    \ && lexima#string#to_inputtable(a:rule.char) !~ '.*\k$'
+      let s:map_dict[a:rule.char].prehooks = ['<C-]>']
+    endif
+    let newchar_flg = 1
+  endif
+  let ft_keys = empty(a:rule.filetype) ? ['_'] : a:rule.filetype
+  for ft in ft_keys
+    if !has_key(s:map_dict[a:rule.char].rules, ft)
+      let s:map_dict[a:rule.char].rules[ft] = lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
+    endif
+    call s:map_dict[a:rule.char].rules[ft].add(a:rule)
+  endfor
+  " define imap in the last of the function in order avoid invalid mapping
+  " definition when an error occur.
+  if newchar_flg
+    execute printf("inoremap <expr><silent> %s lexima#insmode#_expand(%s)",
+                  \ a:rule.char,
+                  \ string(lexima#string#to_mappable(a:rule.char))
+                  \ )
+  endif
+endfunction
+
+function! lexima#insmode#clear_rules()
+  for c in keys(s:map_dict)
+    execute "iunmap " . c
+  endfor
+  let s:map_dict = {}
+endfunction
+
+function! lexima#insmode#_expand(char) abort
   let char = lexima#string#to_upper_specialkey(a:char)
-  call s:define_map(char, a:mapping, '', '')
+  let fallback = lexima#string#to_inputtable(a:char)
+  if !has_key(s:map_dict, char)
+    return fallback
+  endif
+  let map = s:map_dict[char]
+  let prehooks = lexima#string#to_inputtable(join(map.prehooks, ''))
+  let posthooks = lexima#string#to_inputtable(join(map.posthooks, ''))
+  return printf("%s\<C-r>=lexima#insmode#_map_impl(%s)\<CR>%s",
+              \ prehooks,
+              \ string(char),
+              \ posthooks
+              \ )
+endfunction
+
+function! lexima#insmode#_map_impl(char) abort
+  return s:map_impl(a:char)
+endfunction
+
+function! lexima#insmode#define_altanative_key(char, mapping)
+  execute printf("inoremap <expr><silent> %s lexima#insmode#_expand(%s)",
+               \ a:char,
+               \ string(lexima#string#to_mappable(a:mapping))
+               \ )
 endfunction
 
 function! lexima#insmode#map_hook(when, char, expr)
   let char = lexima#string#to_upper_specialkey(a:char)
-  let i = index(s:mapped_chars, char)
-  if i !=# -1
-    call remove(s:mapped_chars, i)
+  if !has_key(s:map_dict, char)
+    throw 'lexima: no rule to add map hook (' . a:char . ').'
   endif
   if a:when ==# 'before'
-    call s:define_map(char, char, a:expr, '')
+    call add(s:map_dict[char].prehooks, a:expr)
   elseif a:when ==# 'after'
-    call s:define_map(char, char, '', a:expr)
+    call add(s:map_dict[char].posthooks, a:expr)
   endif
 endfunction
 
-function! s:map_impl(char, fallback)
-  let fallback = lexima#string#to_inputtable(a:fallback)
+function! s:map_impl(char)
+  let fallback = lexima#string#to_inputtable(a:char)
   if &buftype ==# 'nofile' && !s:B.is_cmdwin()
     return fallback
   endif
@@ -70,18 +140,18 @@ function! s:map_impl(char, fallback)
   else
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(a:fallback)))
+        let input = printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(a:char)))
       elseif type(rule.leave) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(a:fallback)))
+        let input = printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(a:char)))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
       let input_after = ''
     elseif has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:fallback)))
+        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
       elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:fallback)))
+        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:char)))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
@@ -98,23 +168,20 @@ endfunction
 function! s:find_rule(char)
   let syntax_chain = s:get_syntax_link_chain()
   let searchlimit = max([0, line('.') - 20])
-  for rule in s:rules.as_list()
-    if empty(rule.filetype) || index(rule.filetype, &filetype) >=# 0
-      if rule.char ==# a:char
-        let endpos = searchpos(rule.at, 'bcWn', searchlimit)
-        let excepted = has_key(rule, 'except') ?
-        \              searchpos(rule.except, 'bcWn', searchlimit) !=# [0, 0] : 0
-        if endpos !=# [0, 0] && !excepted
-          if empty(rule.syntax)
+  let rules = lexima#insmode#get_map_rules(a:char)
+  for rule in rules
+    let endpos = searchpos(rule.at, 'bcWn', searchlimit)
+    let excepted = has_key(rule, 'except') ?
+    \              searchpos(rule.except, 'bcWn', searchlimit) !=# [0, 0] : 0
+    if endpos !=# [0, 0] && !excepted
+      if empty(rule.syntax)
+        return rule
+      else
+        for syn in syntax_chain
+          if index(rule.syntax, syn) >=# 0
             return rule
-          else
-            for syn in syntax_chain
-              if index(rule.syntax, syn) >=# 0
-                return rule
-              endif
-            endfor
           endif
-        endif
+        endfor
       endif
     endif
   endfor
