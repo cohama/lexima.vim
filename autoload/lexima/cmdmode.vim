@@ -1,41 +1,85 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:mapped_chars = []
-let s:rules = lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order'))
+let s:L = lexima#vital().L
 
-function! lexima#cmdmode#add_rules(rule)
-  call s:rules.add(a:rule)
-  call s:define_map(a:rule.char, a:rule.char)
-endfunction
+let s:map_dict = {}
 
-function! lexima#cmdmode#clear_rules()
-  for c in s:mapped_chars
-    execute "cunmap " . c
-  endfor
-  let s:mapped_chars = []
-  call s:rules.clear()
-endfunction
-
-function! s:define_map(char, mapping)
-  if index(s:mapped_chars, a:char) ==# -1
-    execute printf("cnoremap <expr> %s <SID>map_impl(%s, %s)", a:char, string(lexima#string#to_mappable(a:mapping)), string(lexima#string#to_mappable(a:char)))
-    call add(s:mapped_chars, a:char)
+function! lexima#cmdmode#get_map_rules(char) abort
+  let char = lexima#string#to_upper_specialkey(a:char)
+  if has_key(s:map_dict, char)
+    if &filetype == '' || !s:L.has(keys(s:map_dict[char].rules), &filetype)
+      return s:map_dict[char].rules['_'].as_list()
+    else
+      return s:map_dict[char].rules[&filetype].as_list() +
+      \ s:map_dict[char].rules['_'].as_list()
+    endif
+  else
+    return []
   endif
 endfunction
 
-function! lexima#cmdmode#define_altanative_key(char, mapping)
-  let char = lexima#string#to_upper_specialkey(a:char)
-  call s:define_map(char, a:mapping)
+function! lexima#cmdmode#add_rules(rule)
+  " Expect a:rule to be regularized.
+  if has_key(s:map_dict, a:rule.char)
+    let newchar_flg = 0
+  else
+    let s:map_dict[a:rule.char] = {
+    \ 'rules': {
+    \     '_': lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order'))
+    \   },
+    \ 'prehooks': [],
+    \ 'posthooks': [],
+    \ }
+    " Add <C-]> prehook to expand abbreviation.
+    if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
+    \ && lexima#string#to_inputtable(a:rule.char) !~ '.*\k$'
+      let s:map_dict[a:rule.char].prehooks = ['<C-]>']
+    endif
+    let newchar_flg = 1
+  endif
+  let ft_keys = empty(a:rule.filetype) ? ['_'] : a:rule.filetype
+  for ft in ft_keys
+    if !has_key(s:map_dict[a:rule.char].rules, ft)
+      let s:map_dict[a:rule.char].rules[ft] = lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order'))
+    endif
+    call s:map_dict[a:rule.char].rules[ft].add(a:rule)
+  endfor
+  " define imap in the last of the function in order avoid invalid mapping
+  " definition when an error occur.
+  if newchar_flg
+    execute printf("cnoremap <expr> %s lexima#cmdmode#_expand(%s)",
+                  \ a:rule.char,
+                  \ string(lexima#string#to_mappable(a:rule.char))
+                  \ )
+  endif
 endfunction
 
-function! s:map_impl(char, fallback)
+function! lexima#cmdmode#clear_rules()
+  for c in keys(s:map_dict)
+    execute "cunmap " . c
+  endfor
+  let s:map_dict = {}
+endfunction
+
+function! lexima#cmdmode#define_altanative_key(char, mapping)
+  execute printf("cnoremap <expr> %s lexima#cmdmode#_expand(%s)",
+               \ a:char,
+               \ string(lexima#string#to_mappable(a:mapping))
+               \ )
+endfunction
+
+function! lexima#cmdmode#_expand(char) abort
+  let char = lexima#string#to_upper_specialkey(a:char)
+  let map = s:map_dict[char]
+  let prehooks = lexima#string#to_inputtable(join(map.prehooks, ''))
+  let posthooks = lexima#string#to_inputtable(join(map.posthooks, ''))
   let pos = getcmdpos()
   let cmdline = getcmdline()
   let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
-  let rule = s:find_rule(a:char)
+  let rule = s:find_rule(char)
   if rule == {}
-    return lexima#string#to_inputtable(a:fallback)
+    return lexima#string#to_inputtable(char)
   else
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type(0)
@@ -67,14 +111,13 @@ function! s:find_rule(char)
   let cmdline = getcmdline()
   let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
   let cmdtype = getcmdtype()
-  for rule in s:rules.as_list()
+  let rules = lexima#cmdmode#get_map_rules(a:char)
+  for rule in rules
     if rule.mode =~# 'c' || rule.mode =~# cmdtype
       if rule.char ==# a:char
         let [pre_at, post_at] = map(split(rule.at, '\\%#', 1) + ['', ''], 'v:val . "$"')[0:1]
         if precursor =~# pre_at && postcursor =~# post_at
-          if empty(rule.filetype) || index(rule.filetype, &filetype) >=# 0
-            return rule
-          endif
+          return rule
         endif
       endif
     endif
