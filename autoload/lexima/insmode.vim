@@ -70,7 +70,7 @@ function! lexima#insmode#add_rules(rule) abort
     endif
     call s:map_dict[a:rule.char].rules[ft].add(a:rule)
   endfor
-  " define imap in the last of the function in order avoid invalid mapping
+  " Define imap in the last of the function in order to avoid invalid mapping
   " definition when an error occur.
   if newchar_flg
     execute printf("inoremap <expr><silent> %s lexima#insmode#_expand(%s)",
