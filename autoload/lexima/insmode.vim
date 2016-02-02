@@ -90,7 +90,7 @@ endfunction
 function! lexima#insmode#_expand(char) abort
   let char = lexima#string#to_upper_specialkey(a:char)
   let fallback = lexima#string#to_inputtable(a:char)
-  if !has_key(s:map_dict, char)
+  if !has_key(s:map_dict, char) || mode() !=# 'i'
     return fallback
   endif
   let map = s:map_dict[char]
