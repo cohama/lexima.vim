@@ -228,6 +228,20 @@ lexima#add_rule({rule})				*lexima#add_rule()*
 	For more details, see |lexima-rules|
 
 
+lexima#expand({char}, {mode})			*lexima#expand()*
+	Force to call mapping sequence where {char} pressed on {mode} ('i' or ':').
+	By default, laxima.vim maps keys by the following command.
+>
+	inoremap <expr> ( lexima#expand('(', 'i')
+<
+	You can customize the sequence by remapping this function.
+>
+	" Do nothing if some condition is fulfilled
+	inoremap <expr> <CR> someCondition() ? '' : lexima#expand('<CR>', 'i')
+<
+	If you remap keys, please add after |lexima#add_rule()|.
+
+
 lexima#insmode#escape()				*lexima#insmode#escape()*
 	When you end the Insert mode, you should call this function before
 	input <Esc>.
@@ -235,6 +249,7 @@ lexima#insmode#escape()				*lexima#insmode#escape()*
 
 	If you want to escape from the insert mode with e.g. jj, you should
 	define |g:lexima_map_escape| accordingly.
+
 
 
 ==============================================================================

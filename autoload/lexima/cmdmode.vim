@@ -48,7 +48,7 @@ function! lexima#cmdmode#add_rules(rule)
   " define imap in the last of the function in order avoid invalid mapping
   " definition when an error occur.
   if newchar_flg
-    execute printf("cnoremap <expr> %s lexima#cmdmode#_expand(%s)",
+    execute printf("cnoremap <expr> %s lexima#expand(%s, ':')",
                   \ a:rule.char,
                   \ string(lexima#string#to_mappable(a:rule.char))
                   \ )

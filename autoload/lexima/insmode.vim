@@ -73,7 +73,7 @@ function! lexima#insmode#add_rules(rule) abort
   " Define imap in the last of the function in order to avoid invalid mapping
   " definition when an error occur.
   if newchar_flg
-    execute printf("inoremap <expr><silent> %s lexima#insmode#_expand(%s)",
+    execute printf("inoremap <expr><silent> %s lexima#expand(%s, 'i')",
                   \ a:rule.char,
                   \ string(lexima#string#to_mappable(a:rule.char))
                   \ )
@@ -108,7 +108,7 @@ function! lexima#insmode#_map_impl(char) abort
 endfunction
 
 function! lexima#insmode#define_altanative_key(char, mapping)
-  execute printf("inoremap <expr><silent> %s lexima#insmode#_expand(%s)",
+  execute printf("inoremap <expr><silent> %s lexima#expand(%s, 'i')",
                \ a:char,
                \ string(lexima#string#to_mappable(a:mapping))
                \ )

@@ -130,6 +130,16 @@ function! lexima#add_rule(rule)
   endif
 endfunction
 
+function! lexima#expand(char, mode) abort
+  if a:mode ==# 'i'
+    return lexima#insmode#_expand(a:char)
+  elseif a:mode ==# ':'
+    return lexima#cmdmode#_expand(a:char)
+  else
+    throw 'lexima: Illegal `mode` parameter. (' . a:mode . ')'
+  endif
+endfunction
+
 function! s:regularize(rule)
   let reg_rule = extend(deepcopy(a:rule), s:default_rule, 'keep')
   if type(reg_rule.filetype) !=# type([])
