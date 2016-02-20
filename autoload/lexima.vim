@@ -64,6 +64,7 @@ let g:lexima#default_rules += [
 \ {'char': '`', 'input_after': '`'},
 \ {'char': '`', 'at': '\%#`', 'leave': 1},
 \ {'char': '<BS>', 'at': '`\%#`', 'delete': 1},
+\ {'char': '`', 'filetype': ['ocaml']},
 \ {'char': '`', 'at': '``\%#', 'input_after': '```'},
 \ {'char': '`', 'at': '\%#```', 'leave': 3},
 \ {'char': '<BS>', 'at': '```\%#```', 'input': '<BS><BS><BS>', 'delete': 3},
