@@ -15,8 +15,8 @@ let s:input_stack = lexima#charstack#new()
 "       'javascript': [{'at': ...}, {'at': ...}, {}, ...],
 "       'ruby': [{'at': ...}, {'at': ...}, {}, ...],
 "     },
-"     'prehooks': ['x', 'y', 'z']
-"     'posthooks': ['x', 'y', 'z']
+"     'prehook': function(),
+"     'posthook': function()
 "   }
 " }
 let s:map_dict = {}
@@ -44,6 +44,21 @@ function! lexima#insmode#get_map_rules(char) abort
   endif
 endfunction
 
+function! lexima#insmode#_default_prehook(char) abort
+  " Add <C-]> prehook to expand abbreviation.
+  if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
+  \ && lexima#string#to_inputtable(a:char) !~ '.*\k$'
+    return '<C-]>'
+    endif
+  else
+    return ''
+  endif
+endfunction
+
+function! lexima#insmode#_default_posthook(char) abort
+  return ''
+endfunction
+
 function! lexima#insmode#add_rules(rule) abort
   " Expect a:rule to be regularized.
   if has_key(s:map_dict, a:rule.char)
@@ -53,14 +68,9 @@ function! lexima#insmode#add_rules(rule) abort
     \ 'rules': {
     \     '_': lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
     \   },
-    \ 'prehooks': [],
-    \ 'posthooks': [],
+    \ 'prehook': function('lexima#insmode#_default_prehook'),
+    \ 'posthook': function('lexima#insmode#_default_posthook'),
     \ }
-    " Add <C-]> prehook to expand abbreviation.
-    if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
-    \ && lexima#string#to_inputtable(a:rule.char) !~ '.*\k$'
-      let s:map_dict[a:rule.char].prehooks = ['<C-]>']
-    endif
     let newchar_flg = 1
   endif
   let ft_keys = empty(a:rule.filetype) ? ['_'] : a:rule.filetype
@@ -94,12 +104,16 @@ function! lexima#insmode#_expand(char) abort
     return fallback
   endif
   let map = s:map_dict[char]
-  let prehooks = lexima#string#to_inputtable(join(map.prehooks, ''))
-  let posthooks = lexima#string#to_inputtable(join(map.posthooks, ''))
+  let prehook = lexima#string#to_inputtable(
+  \ (type(map.prehook)) ==# type(function("tr")) ? call(map.prehook, [a:char]) : map.prehook
+  \ )
+  let posthook = lexima#string#to_inputtable(
+  \ (type(map.posthook)) ==# type(function("tr")) ? call(map.posthook, [a:char]) : map.posthook
+  \ )
   return printf("%s\<C-r>=lexima#insmode#_map_impl(%s)\<CR>%s",
-              \ prehooks,
+              \ prehook,
               \ string(char),
-              \ posthooks
+              \ posthook
               \ )
 endfunction
 
@@ -120,9 +134,9 @@ function! lexima#insmode#map_hook(when, char, expr)
     throw 'lexima: no rule to add map hook (' . a:char . ').'
   endif
   if a:when ==# 'before'
-    call add(s:map_dict[char].prehooks, a:expr)
+    let s:map_dict[char].prehook = a:expr
   elseif a:when ==# 'after'
-    call add(s:map_dict[char].posthooks, a:expr)
+    let s:map_dict[char].posthook = a:expr
   endif
 endfunction
 
