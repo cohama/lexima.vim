@@ -21,9 +21,9 @@ function! lexima#endwise_rule#make()
   call add(rules, s:make_rule('\<\%(if\|unless\)\>.*\%#', 'end', 'ruby', 'rubyConditionalExpression'))
 
   " sh
-  call add(rules, s:make_rule('^\s*if\>.*\%#', 'fi', ['sh', 'zsh'], ''))
-  call add(rules, s:make_rule('^\s*case\>.*\%#', 'esac', ['sh', 'zsh'], ''))
-  call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\>.*\%#', 'done', ['sh', 'zsh'], ''))
+  call add(rules, s:make_rule('^\s*if\>.*\%#', 'fi', ['sh', 'zsh'], []))
+  call add(rules, s:make_rule('^\s*case\>.*\%#', 'esac', ['sh', 'zsh'], []))
+  call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\>.*\%#', 'done', ['sh', 'zsh'], []))
 
   return rules
 endfunction
