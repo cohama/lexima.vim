@@ -58,4 +58,34 @@ Describe endwise rule
     End
   End
 
+  function! s:shared_examples_for_shells()
+      call Expect("if true\<CR>").to_change_input_as("if true\n\nfi")
+      call Expect("if true; then\<CR>").to_change_input_as("if true; then\n\nfi")
+      call Expect("case A in\<CR>").to_change_input_as("case A in\n\nesac")
+      call Expect("do\<CR>").to_change_input_as("do\n\ndone")
+      call Expect("for x in y; do\<CR>").to_change_input_as("for x in y; do\n\ndone")
+  endfunction
+
+  Context in sh
+
+    Before all
+      new | setf sh
+    End
+
+    It should input end word
+        call s:shared_examples_for_shells()
+    End
+  End
+
+  Context in zsh
+
+    Before all
+      new | setf zsh
+    End
+
+    It should input end word
+        call s:shared_examples_for_shells()
+    End
+  End
+
 End
