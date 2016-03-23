@@ -20,6 +20,9 @@ function! lexima#endwise_rule#make()
   call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\%(\s*|.*|\)\?\s*\%#', 'end', 'ruby', []))
   call add(rules, s:make_rule('\<\%(if\|unless\)\>.*\%#', 'end', 'ruby', 'rubyConditionalExpression'))
 
+  " elixir
+  call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\s*\%#', 'end', 'elixir', []))
+
   " sh
   call add(rules, s:make_rule('^\s*if\>.*\%#', 'fi', ['sh', 'zsh'], []))
   call add(rules, s:make_rule('^\s*case\>.*\%#', 'esac', ['sh', 'zsh'], []))
