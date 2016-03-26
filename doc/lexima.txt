@@ -414,6 +414,14 @@ TODO						*lexima-todo*
 ==============================================================================
 CHANGELOG					*lexima-changelog*
 
+v1.2	Add |lexima-space-rules|.
+	Add "except" key in |lexima-rule|
+	Add |lexima#expand()| function.
+	Add Elixir endwise rule.
+	Impove rule finding perfomance.
+	Fix abbreviation problem.
+	Fix conflict problem with auto-completion plugin e.g. neocomplete
+
 v1.1	Categorize rules into |lexima-basic-rules| and |lexima-newline-rules|
 	Add |lexima-endwise-rules|.
 	Add |lexima#set_default_rules()|.
