@@ -42,6 +42,7 @@ Describe In commandline mode,
 
   It does not affect on insertmode
     call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': ':/?'})
+    %delete _
     execute "normal ihoge(\<Esc>"
     call Expect(['hoge(']).to_be_displayed()
   End
