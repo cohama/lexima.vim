@@ -22,12 +22,7 @@ let s:input_stack = lexima#charstack#new()
 let s:map_dict = {}
 
 function! lexima#insmode#get_rules()
-  echomsg 'lexima: lexima#insmode#get_rules() has been deprecated! Use lexima#insmode#get_map_rules() instead.'
-  let ret = []
-  for char in keys(s:map_dict)
-    let ret += s:map_dict[char].rules.as_list()
-  endfor
-  return ret
+  return s:map_dict
 endfunction
 
 function! lexima#insmode#get_map_rules(char) abort
