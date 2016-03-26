@@ -156,6 +156,7 @@ In ruby filetype,
 In vim filetype, "function", "if", "while" ... rules are available.
 And also you can use in sh (zsh) such as "if", "case".
 
+Also Elixir's "do" is supported.
 
 
 ==============================================================================
