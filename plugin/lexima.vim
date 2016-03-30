@@ -6,8 +6,6 @@ if exists('g:loaded_lexima')
 endif
 let g:loaded_lexima = 1
 
-call lexima#init()
-
 
 if !exists('g:lexima_map_escape')
   let g:lexima_map_escape = '<Esc>'
