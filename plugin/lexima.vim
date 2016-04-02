@@ -26,6 +26,11 @@ function! s:setup_insmode()
   endif
 endfun
 
+augroup lexima-init
+  autocmd!
+  autocmd InsertEnter * call lexima#init() | autocmd! lexima-init
+augroup END
+
 augroup lexima
   autocmd!
   autocmd InsertEnter * call lexima#insmode#clear_stack()
