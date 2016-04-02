@@ -6,8 +6,6 @@ if exists('g:loaded_lexima')
 endif
 let g:loaded_lexima = 1
 
-call lexima#init()
-
 
 if !exists('g:lexima_map_escape')
   let g:lexima_map_escape = '<Esc>'
@@ -27,6 +25,12 @@ function! s:setup_insmode()
     exe 'inoremap <buffer> <silent> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   endif
 endfun
+
+augroup lexima-init
+  autocmd!
+  autocmd InsertEnter * call lexima#init() | autocmd! lexima-init
+  autocmd InsertEnter * augroup! lexima-init
+augroup END
 
 augroup lexima
   autocmd!
