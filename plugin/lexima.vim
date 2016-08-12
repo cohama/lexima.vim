@@ -29,7 +29,6 @@ endfun
 augroup lexima-init
   autocmd!
   autocmd InsertEnter * call lexima#init() | autocmd! lexima-init
-  autocmd InsertEnter * augroup! lexima-init
 augroup END
 
 augroup lexima
