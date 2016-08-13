@@ -287,15 +287,11 @@ function! s:input(input, input_after)
       let indent_depth = eval(&l:indentexpr)
     endif
 
-    let sw = &shiftwidth
-    if sw == 0
-      let sw = &tabstop
-    endif
-
     if &expandtab
       let indent = repeat(' ', indent_depth)
     else
-      let indent = repeat("\t", indent_depth / sw)
+      let indent = repeat("\t", indent_depth / &tabstop)
+      \            . repeat(' ', indent_depth % &tabstop)
     endif
 
     call setline(lnum+i, indent . getline(lnum+i))
