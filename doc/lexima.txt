@@ -210,7 +210,7 @@ b:lexima_disabled				*b:lexima_disabled*
 ------------------------------------------------------------------------------
 FUNCTIONS					*lexima-functions*
 
-lexima#set_default_rules({rule})		*lexima#set_default_rules()*
+lexima#set_default_rules()			*lexima#set_default_rules()*
 	Clear all rules and set default rules.
 	This is useful to write your vimrc as reloadable.
 >
