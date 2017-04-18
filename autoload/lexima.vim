@@ -131,6 +131,17 @@ function! lexima#add_rule(rule)
   endif
 endfunction
 
+function! lexima#add_rules(rules, ...)
+  for rule in a:rules
+    let patchedrule = rule
+    if a:0 > 0
+      " Second argument is a filetype that should apply to each rule
+      let patchedrule = extend(copy(rule), {'filetype': a:1})
+    endif
+    call lexima#add_rule(patchedrule)
+  endfor
+endfunction
+
 function! lexima#expand(char, mode) abort
   if a:mode ==# 'i'
     return lexima#insmode#_expand(a:char)
