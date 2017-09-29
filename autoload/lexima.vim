@@ -12,6 +12,7 @@ let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
 let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
 let g:lexima_enable_space_rules = get(g:, 'lexima_enable_space_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 1)
+let g:lexima_nvim_accept_pum_with_enter = get(g:, 'lexima_nvim_accept_pum_with_enter', 1)
 
 let s:lexima_vital = {
 \ 'L' : s:L,
