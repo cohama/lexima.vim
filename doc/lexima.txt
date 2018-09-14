@@ -409,7 +409,7 @@ MAKE A DOT-REPEATABLE RULE			*lexima-repeatable-rule*
 
 Here is the guide-line to make a rule dot-repeatable. (For Insert mode only)
 
-1. Use "insert_after" instead of <Left>
+1. Use "input_after" instead of <Left>
 >
 	" Bad (unrepeatable)
 	call lexima#add_rule({'char': '(', 'input': '()<Left>'})
