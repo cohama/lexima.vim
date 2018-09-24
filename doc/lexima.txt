@@ -239,6 +239,14 @@ g:lexima_enable_endwise_rules			*g:lexima_enable_endwise_rules*
 	If it is 1, |lexima-endwise-rules| are enabled by default.
 	default value: 1
 
+g:lexima_enable_nvim_accept_pum_with_enter	*g:lexima_nvim_accept_pum_with_enter*
+	If it is 1, enables <cr> to be used to accept completions when the
+	|popup-menu| is visible.
+	default value: 1
+>
+	" Always insert new line regardless if popup menu is visibel
+	let g:lexima_nvim_accept_pum_with_enter = 0
+
 b:lexima_disabled				*b:lexima_disabled*
 	If it is 1, all of lexima rules are disabled on the buffer.
 	(local to buffer)
