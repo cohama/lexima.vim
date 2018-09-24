@@ -82,10 +82,13 @@ let g:lexima#newline_rules = [
 
 let g:lexima#space_rules = [
 \ {'char': '<Space>', 'at': '(\%#)', 'input_after': '<Space>'},
+\ {'char': ')', 'at': '\%# )', 'leave': 2},
 \ {'char': '<BS>', 'at': '( \%# )', 'delete': 1},
 \ {'char': '<Space>', 'at': '{\%#}', 'input_after': '<Space>'},
+\ {'char': '}', 'at': '\%# }', 'leave': 2},
 \ {'char': '<BS>', 'at': '{ \%# }', 'delete': 1},
 \ {'char': '<Space>', 'at': '\[\%#]', 'input_after': '<Space>'},
+\ {'char': ']', 'at': '\%# ]', 'leave': 2},
 \ {'char': '<BS>', 'at': '\[ \%# ]', 'delete': 1},
 \ ]
 

@@ -62,6 +62,11 @@ Describe default rule
     call Expect("{ \<BS>").to_change_input_as("{}")
   End
 
+  It should leave the extra space inside brackets
+    call Expect("( x)").to_change_input_as("( x )")
+    call Expect("{ foo bar}").to_change_input_as("{ foo bar }")
+  End
+
   It should not input the pair of the single quote for some language's specification
     for ft in ['haskell', 'lisp', 'clojure', 'ocaml', 'scala']
       enew!
