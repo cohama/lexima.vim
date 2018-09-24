@@ -247,6 +247,10 @@ g:lexima_enable_nvim_accept_pum_with_enter	*g:lexima_nvim_accept_pum_with_enter*
 	" Always insert new line regardless if popup menu is visibel
 	let g:lexima_nvim_accept_pum_with_enter = 0
 
+g:lexima_ctrlh_as_backspace			*g:lexima_ctrlh_as_backspace*
+	If it is 1, <C-h> can be used in the same manner as <BS>.
+	default value: 0
+
 b:lexima_disabled				*b:lexima_disabled*
 	If it is 1, all of lexima rules are disabled on the buffer.
 	(local to buffer)

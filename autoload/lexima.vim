@@ -13,6 +13,7 @@ let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
 let g:lexima_enable_space_rules = get(g:, 'lexima_enable_space_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 1)
 let g:lexima_nvim_accept_pum_with_enter = get(g:, 'lexima_nvim_accept_pum_with_enter', 1)
+let g:lexima_ctrlh_as_backspace = get(g:, 'lexima_ctrlh_as_backspace', 0)
 
 let s:lexima_vital = {
 \ 'L' : s:L,
@@ -117,6 +118,9 @@ function! lexima#set_default_rules()
     for rule in lexima#endwise_rule#make()
       call lexima#add_rule(rule)
     endfor
+  endif
+  if g:lexima_ctrlh_as_backspace
+    call lexima#insmode#define_altanative_key('<C-h>', '<BS>')
   endif
 endfunction
 
