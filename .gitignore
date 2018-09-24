@@ -1,4 +1,4 @@
 .bundle
 mysession.vim
 Gemfile.lock
-test/vendor/bundle
+test/vim-themis
