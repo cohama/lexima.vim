@@ -290,7 +290,7 @@ lexima#expand({char}, {mode})			*lexima#expand()*
 	You can customize the sequence by remapping this function.
 >
 	" Do nothing if some condition is fulfilled
-	inoremap <expr> <CR> someCondition() ? '' : lexima#expand('<CR>', 'i')
+	inoremap <expr> <CR> someCondition() ? '' : lexima#expand('<LT>CR>', 'i')
 <
 	If you remap keys, please add after |lexima#add_rule()|.
 
