@@ -29,10 +29,10 @@ function! lexima#endwise_rule#make()
   call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\>.*\%#', 'done', ['sh', 'zsh'], []))
 
   " julia
-  call add(rules, s:make_rule('^\s*\%(module\|function\|struct\|if\|for\|while\)\>\%(.*[^.:@$]\<end\>\)\@!.*\%#', 'end', 'julia', []))
-  call add(rules, s:make_rule('^\s*\%(begin\|try\)\s*\%#', 'end', 'julia', []))
+  call add(rules, s:make_rule('^\s*\%(module\|function\|struct\|if\|for\|while\|let\|macro\)\>\%(.*[^.:@$]\<end\>\)\@!.*\%#', 'end', 'julia', []))
+  call add(rules, s:make_rule('^\s*\%(begin\|try\|quote\)\s*\%#', 'end', 'julia', []))
   call add(rules, s:make_rule('\%(^\s*#.*\)\@<!do\%(\s*.*\)\?\s*\%#', 'end', 'julia', []))
-  call add(rules, s:make_rule('=\s*\%(if\|begin\|try\)\>\%(.*\<end\>\)\@!.*\%#', 'end', 'julia', []))
+  call add(rules, s:make_rule('=\s*\%(if\|begin\|try\|quote\)\>\%(.*\<end\>\)\@!.*\%#', 'end', 'julia', []))
 
   return rules
 endfunction
