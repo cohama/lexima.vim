@@ -88,4 +88,36 @@ Describe endwise rule
     End
   End
 
+  Context in julia
+
+    Before all
+      new | setf julia
+    End
+
+    It should input end word
+      call Expect("function f()\<CR>").to_change_input_as("function f()\n\nend")
+      call Expect("g = function ()\<CR>").to_change_input_as("g = function ()\n\nend")
+      call Expect("return function ()\<CR>").to_change_input_as("return function ()\n\nend")
+      call Expect("@generated function f(x)\<CR>").to_change_input_as("@generated function f(x)\n\nend")
+      call Expect("begin\<CR>").to_change_input_as("begin\n\nend")
+      call Expect("x = begin\<CR>").to_change_input_as("x = begin\n\nend")
+      call Expect("@eval begin\<CR>").to_change_input_as("@eval begin\n\nend")
+      call Expect("eval(quote\<CR>").to_change_input_as("eval(quote\n\nend")
+      call Expect("if x\<CR>").to_change_input_as("if x\n\nend")
+      call Expect("x = if y\<CR>").to_change_input_as("x = if y\n\nend")
+      call Expect("for i in 1:10\<CR>").to_change_input_as("for i in 1:10\n\nend")
+      call Expect("@threads for i in 1:10\<CR>").to_change_input_as("@threads for i in 1:10\n\nend")
+      call Expect("while true\<CR>").to_change_input_as("while true\n\nend")
+      call Expect("let\<CR>").to_change_input_as("let\n\nend")
+      call Expect("let x = 1\<CR>").to_change_input_as("let x = 1\n\nend")
+      call Expect("map(1:10) do i\<CR>").to_change_input_as("map(1:10) do i\n\nend")
+    End
+
+    It should not input end word
+      call Expect("x = begin y; end\<CR>").to_change_input_as("x = begin y; end\n")
+      call Expect("# Yes, I do\<CR>").to_change_input_as("# Yes, I do\n")
+      call Expect("x # let's try\<CR>").to_change_input_as("x # let's try\n")
+    End
+  End
+
 End
