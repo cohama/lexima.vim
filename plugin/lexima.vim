@@ -19,6 +19,10 @@ if g:lexima_map_escape == '<Esc>' && !has('gui_running')
 endif
 
 function! s:setup_insmode()
+  if get(b:, 'lexima_disabled', 0)
+    return
+  endif
+
   if v:version > 703 || (v:version == 703 && has("patch1261"))
     exe 'inoremap <buffer> <silent> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   else
