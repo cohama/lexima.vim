@@ -1,7 +1,7 @@
 let s:save_cpo = &cpo
 set cpo&vim
 
-let s:V = vital#of('lexima')
+let s:V = vital#lexima#new()
 let s:L = s:V.import('Data.List')
 let s:S = s:V.import('Data.String')
 let s:B = s:V.import('Vim.Buffer')
