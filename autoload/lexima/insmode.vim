@@ -286,7 +286,7 @@ function! s:input(input, input_after)
     else
       call setpos('.', [0, lnum+i, 0, 0])
       let v:lnum = lnum+i
-      let indent_depth = eval(&l:indentexpr)
+      silent! let indent_depth = eval(&l:indentexpr)
     endif
 
     if &expandtab
