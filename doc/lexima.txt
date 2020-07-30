@@ -240,12 +240,20 @@ g:lexima_enable_endwise_rules			*g:lexima_enable_endwise_rules*
 	default value: 1
 
 g:lexima_nvim_accept_pum_with_enter		*g:lexima_nvim_accept_pum_with_enter*
+	Deprecated. Use g:lexima_accept_pum_with_enter instead.
+
+g:lexima_accept_pum_with_enter			*g:lexima_accept_pum_with_enter*
 	If it is 1, enables <cr> to be used to accept completions when the
 	|popup-menu| is visible.
-	default value: 1
+	default value: 0 in vim, and 1 in neovim
 >
+	" Don't insert new line if popup menu is visibel
+	let g:lexima_accept_pum_with_enter = 1
+
+	or
+
 	" Always insert new line regardless if popup menu is visibel
-	let g:lexima_nvim_accept_pum_with_enter = 0
+	let g:lexima_accept_pum_with_enter = 0
 
 g:lexima_ctrlh_as_backspace			*g:lexima_ctrlh_as_backspace*
 	If it is 1, <C-h> can be used in the same manner as <BS>.
