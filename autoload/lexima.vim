@@ -12,7 +12,13 @@ let g:lexima_enable_basic_rules = get(g:, 'lexima_enable_basic_rules', 1)
 let g:lexima_enable_newline_rules = get(g:, 'lexima_enable_newline_rules', 1)
 let g:lexima_enable_space_rules = get(g:, 'lexima_enable_space_rules', 1)
 let g:lexima_enable_endwise_rules = get(g:, 'lexima_enable_endwise_rules', 1)
-let g:lexima_nvim_accept_pum_with_enter = get(g:, 'lexima_nvim_accept_pum_with_enter', 1)
+if exists('g:lexima_nvim_accept_pum_with_enter')
+  echohl WarningMsg
+  echom 'lexima: g:lexima_nvim_accept_pum_with_enter is deprecated. Use g:lexima_accept_pum_with_enter instead.'
+  echohl None
+  let g:lexima_accept_pum_with_enter = g:lexima_nvim_accept_pum_with_enter
+endif
+let g:lexima_accept_pum_with_enter = get(g:, 'lexima_accept_pum_with_enter', has('nvim'))
 let g:lexima_ctrlh_as_backspace = get(g:, 'lexima_ctrlh_as_backspace', 0)
 
 let s:lexima_vital = {
