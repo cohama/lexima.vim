@@ -247,12 +247,12 @@ g:lexima_accept_pum_with_enter			*g:lexima_accept_pum_with_enter*
 	|popup-menu| is visible.
 	default value: 0 in vim, and 1 in neovim
 >
-	" Don't insert new line if popup menu is visibel
+	" Don't insert new line if popup menu is visible
 	let g:lexima_accept_pum_with_enter = 1
 
 	or
 
-	" Always insert new line regardless if popup menu is visibel
+	" Always insert new line regardless if popup menu is visible
 	let g:lexima_accept_pum_with_enter = 0
 
 g:lexima_ctrlh_as_backspace			*g:lexima_ctrlh_as_backspace*
