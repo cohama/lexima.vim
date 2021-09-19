@@ -33,6 +33,10 @@ function! s:stack.peek(...)
   return join(self.v[0:n-1], '')
 endfunction
 
+function! s:stack.peek_all()
+  return self.peek(len(self.v))
+endfunction
+
 function! s:stack.pop_all()
   return self.pop(len(self.v))
 endfunction

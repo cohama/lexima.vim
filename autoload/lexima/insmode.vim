@@ -4,7 +4,8 @@ set cpo&vim
 let s:B = lexima#vital().B
 let s:L = lexima#vital().L
 
-let s:input_stack = lexima#charstack#new()
+let s:pass_through_input_stack = lexima#charstack#new()  " can use arrow key e.g. ()<C-g>U<Left>
+let s:lazy_input_stack = lexima#charstack#new()  " cannot use arrow key e.g. {<CR>. It will be input on press <Esc>.
 
 " mapping dictionary. e.g.
 " {
@@ -159,28 +160,24 @@ function! s:map_impl(char) abort
   else
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(a:char)))
+        return lexima#string#to_inputtable(printf('<C-r>=lexima#insmode#leave_till(%s, %s)<CR>', string(rule.leave), string(lexima#string#to_mappable(a:char))))
       elseif type(rule.leave) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(a:char)))
+        return lexima#string#to_inputtable(printf('<C-r>=lexima#insmode#leave(%d, %s)<CR>', rule.leave, string(lexima#string#to_mappable(a:char))))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
-      let input_after = ''
     elseif has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
+        return lexima#string#to_inputtable(printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char))) . rule.input)
       elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(repeat('<Del>', rule.delete))))
+        return lexima#string#to_inputtable(printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(repeat('<Del>', rule.delete)))) . rule.input)
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
-      let input = input . rule.input
-      let input_after = ''
     else
-      let input = rule.input
-      let input_after = rule.input_after
+      return s:input(lexima#string#to_inputtable(rule.input), lexima#string#to_inputtable(rule.input_after))
     endif
-    return s:input(lexima#string#to_inputtable(input), lexima#string#to_inputtable(input_after))
+    throw
   endif
 endfunction
 
@@ -264,7 +261,84 @@ function! s:get_syntax_link_chain()
   return result_stack
 endfunction
 
-function! s:input(input, input_after)
+function! s:input(input, input_after) abort
+  " echom "----- input ----" a:input a:input_after
+  let [first_line; after_lines] = split(a:input_after, "\r", 1)
+  let input = s:input_oneline(a:input, first_line)
+  if len(after_lines) == 0
+    " echom "early"
+    call s:pass_through_input_stack.push(a:input_after)
+    return input
+  endif
+  let [bufnum, lnum, col, off] = getpos('.')
+  let curline = getline('.')
+  let precursor = curline[:col - 2]
+  let postcursor = curline[col - 1:]
+
+  call setline('.', precursor)
+  let after_lines[-1] .= postcursor
+  call append(lnum, after_lines)  " temporally set due to indent calculation
+
+  " handling indent
+  for i in range(0, len(after_lines) - 1)
+    let indent_depth = s:calc_indent_depth(lnum + i + 1)
+    let indent = s:get_indent_chars(indent_depth)
+    call setline(lnum + i + 1, indent . after_lines[i])  " fix indent
+  endfor
+
+  call setpos(".", [bufnum, lnum, col, off])
+
+  if strchars(postcursor) > 0
+    let stacked_curline_input = s:pass_through_input_stack.pop_all()
+    let end = matchend(postcursor, '\V\C\^' . stacked_curline_input)
+    if end > 0
+      let input = repeat(lexima#string#to_inputtable("<Del>"), strchars(stacked_curline_input))
+      \ . s:input_oneline(a:input, first_line)
+      call s:pass_through_input_stack.push(first_line)
+      call s:lazy_input_stack.push(a:input_after . stacked_curline_input)
+      call setline('.', precursor . stacked_curline_input)
+    endif
+    " echom "pre: " precursor ", post: " postcursor ", stack: " s:pass_through_input_stack.peek_all()
+  endif
+
+  " echom "geline: " getline(0, "$")
+  " echom "pos: " [bufnum, lnum, col, off]
+  " echom "after_lines: " join(after_lines, ",")
+  " echom "post geline: " getline(0, "$")
+  " echom "pos: " [bufnum, lnum, col, off]
+  " echom "input: " . input
+  return input
+endfunction
+
+function! s:input_oneline(input, input_after) abort
+  return a:input . a:input_after . repeat(lexima#string#to_inputtable("<C-g>U<Left>"), strchars(a:input_after))
+endfunction
+
+function! s:calc_indent_depth(lnum) abort
+  if &indentexpr ==# ''
+    if &smartindent || &cindent
+      return cindent(a:lnum)
+    elseif &autoindent
+      return indent(a:lnum - 1)
+    else
+      return 0
+    endif
+  else
+    let v:lnum = a:lnum
+    silent! let indent_depth = eval(&l:indentexpr)
+    return indent_depth
+  endif
+endfunction
+
+function! s:get_indent_chars(indent_depth) abort
+  if &expandtab
+    return repeat(' ', a:indent_depth)
+  else
+    return repeat("\t", a:indent_depth / &tabstop) . repeat(' ', a:indent_depth % &tabstop)
+  endif
+endfunction
+
+function! s:input_legacy(input, input_after) abort
   let curline = getline('.')
   let [bufnum, lnum, col, off] = getpos('.')
   let inputs = split(a:input_after, "\r", 1)
@@ -299,49 +373,77 @@ function! s:input(input, input_after)
     call setline(lnum+i, indent . getline(lnum+i))
   endfor
   call setpos('.', [bufnum, lnum, col, off])
-  call s:input_stack.push(a:input_after)
+  call s:pass_through_input_stack.push(a:input_after)
   return a:input
 endfunction
 
 function! lexima#insmode#try_leave(len) abort
   let error = "ERROR!!!"
-  " Returns: [input, failed]
-  if s:input_stack.is_empty()
-    return [error, 1]
+  " Returns: [pass_through_input, lazy_input, is_failed]
+  " echom "leave(" a:len "), passthru: " s:pass_through_input_stack.peek_all() "lazy" s:lazy_input_stack.peek_all()
+  if s:pass_through_input_stack.is_empty() && s:lazy_input_stack.is_empty()
+    " echom "empty"
+    return [error, error, 1]
   endif
-  let input = s:input_stack.peek(a:len)
+  " echom "ok1"
+  if a:len <= s:pass_through_input_stack.count()
+    return [s:pass_through_input_stack.pop(a:len), "", 0]
+  endif
+  let lazy_input = s:lazy_input_stack.peek(a:len - s:pass_through_input_stack.count())
+  " echom "lazy_input: " lazy_input
   let [bufnum, lnum, col, off] = getpos('.')
-  let cr_count = len(split(input, "\r", 1)) - 1
-  let will_input = substitute(input, "\r", '\\n\\s\\*', 'g')
+  let cr_count = len(split(lazy_input, "\r", 1)) - 1
+  let will_input = substitute(s:pass_through_input_stack.peek_all() . lazy_input, "\r", '\\n\\s\\*', 'g')
   let illegal = search('\V\%#' . will_input, 'bcWn') ==# 0
+  " echom "ok2"
   if illegal
-    return [error, 1]
+    " echom "illegal"
+    return [error, error, 1]
   endif
   for i in range(1, cr_count)
-    call setline(lnum+i, substitute(getline(lnum+i), '^\s*', '', ''))
+    call setline(lnum+i, substitute(getline(lnum+i), '\V\^\s\*', '', ''))
   endfor
+  " echom "ok3"
   if cr_count !=# 0
     execute 'join! ' . (cr_count + 1)
   endif
   call setpos('.', [bufnum, lnum, col, off])
   let curline = getline('.')
-  let len = len(input) - cr_count
-  let [precursor, _, postcursor] = lexima#string#take_many(curline, col-1, len)
-  call setline('.', precursor . postcursor)
-  return [s:input_stack.pop(a:len), 0]
+  let leave_candidates_len = s:pass_through_input_stack.count()
+  let lazy_input_len = strchars(lazy_input) - cr_count
+  " echom "ok4"
+  let [precursor, leave_candidates, lazy_candidates, postcursor] = lexima#string#take_many(curline, col-1, leave_candidates_len, lazy_input_len)
+  " let will_leaving = []
+  " for i in range(len)
+  "   if markers[i] ==# "."
+  "     echom "ADD" i
+  "     call add(will_leaving, char2nr(leave_candidates[i]))
+  "   else
+  "     echom "SKIP" i
+  "   endif
+  " endfor
+  " echom "[leave] curline: " . curline . ", leave_candidates: " leave_candidates ", lazy_candidates: " . lazy_candidates . ", postcursor: " postcursor
+  " if postcursor !=# ""
+  call setline('.', precursor .  leave_candidates . postcursor)
+  " endif
+  call s:lazy_input_stack.pop(strchars(lazy_input))
+  " echom "leave returns: pass:" s:pass_through_input_stack.peek_all() ", lazy:" lazy_input
+  return [s:pass_through_input_stack.pop_all(), lazy_input, 0]
 endfunction
 
 function! lexima#insmode#leave(len, fallback)
-  let [input, is_failed] = lexima#insmode#try_leave(a:len)
+  let [pass_through_input, lazy_input, is_failed] = lexima#insmode#try_leave(a:len)
   if is_failed
     return lexima#string#to_inputtable(a:fallback)
   else
-    return input
+    " echom getline(1, "$")
+    " echom repeat(lexima#string#to_inputtable("<C-g>U<Right>"), strchars(pass_through_input)) . lazy_input
+    return repeat(lexima#string#to_inputtable("<C-g>U<Right>"), strchars(pass_through_input)) . lazy_input
   endif
 endfunction
 
 function! lexima#insmode#leave_till(char, fallback)
-  let input = s:input_stack.peek(0)
+  let input = s:pass_through_input_stack.peek_all() . s:lazy_input_stack.peek_all()
   let tilllen = match(input, a:char)
   if tilllen ==# -1
     return lexima#string#to_inputtable(a:fallback)
@@ -351,31 +453,38 @@ function! lexima#insmode#leave_till(char, fallback)
 endfunction
 
 function! lexima#insmode#leave_all(fallback)
-  return lexima#insmode#leave(s:input_stack.count(), a:fallback)
+  return lexima#insmode#leave(s:pass_through_input_stack.count() + s:lazy_input_stack.count(), a:fallback)
 endfunction
 
 function! lexima#insmode#leave_till_eol(fallback)
-  let input = s:input_stack.peek(0)
-  return lexima#insmode#leave(len(split(input, "\r")[0]), a:fallback)
+  return lexima#insmode#leave(s:pass_through_input_stack.count(), a:fallback)
 endfunction
 
 function! lexima#insmode#delete(len, fallback)
-  let [input, is_failed] = lexima#insmode#try_leave(a:len)
+  let [pass_through_input, lazy_input, is_failed] = lexima#insmode#try_leave(a:len)
   if is_failed
     return lexima#string#to_inputtable(a:fallback)
   else
-    return ''
+    return repeat(lexima#string#to_inputtable("<Del>"), strchars(pass_through_input))
   endif
 endfunction
 
 function! lexima#insmode#delete_till(char, fallback)
-  call lexima#insmode#leave_till(a:char, a:fallback)
-  return ''
+  let input = s:pass_through_input_stack.peek_all() . s:lazy_input_stack.peek_all()
+  let tilllen = match(input, a:char)
+  if tilllen ==# -1
+    return lexima#string#to_inputtable(a:fallback)
+  else
+    return lexima#insmode#delete(tilllen + len(a:char), a:fallback)
+  endif
+endfunction
+
+function! lexima#insmode#delete_till_eol(fallback)
+  return lexima#insmode#delete(s:pass_through_input_stack.count(), a:fallback)
 endfunction
 
 function! lexima#insmode#delete_all(fallback)
-  call lexima#insmode#leave_all(a:fallback)
-  return ''
+  return lexima#insmode#delete(s:pass_through_input_stack.count() + s:lazy_input_stack.count(), a:fallback)
 endfunction
 
 function! lexima#insmode#escape()
@@ -387,17 +496,16 @@ function! lexima#insmode#escape()
     call setpos('.', pos_save)
     let ret = ''
   endtry
+  call lexima#insmode#clear_stack()
   return ret
 endfunction
 
-function! lexima#insmode#delete_till_eol(fallback)
-  call lexima#insmode#leave_till_eol(a:fallback)
-  return ''
-endfunction
-
 function! lexima#insmode#clear_stack()
-  if !s:input_stack.is_empty()
-    call s:input_stack.pop_all()
+  if !s:pass_through_input_stack.is_empty()
+    call s:pass_through_input_stack.pop_all()
+  endif
+  if !s:lazy_input_stack.is_empty()
+    call s:lazy_input_stack.pop_all()
   endif
 endfunction
 

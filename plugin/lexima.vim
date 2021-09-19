@@ -30,9 +30,9 @@ function! s:setup_insmode()
   endif
 
   if v:version > 703 || (v:version == 703 && has("patch1261"))
-    exe 'inoremap <buffer> <silent> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
+    exe 'inoremap <buffer> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   else
-    exe 'inoremap <buffer> <silent> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
+    exe 'inoremap <buffer> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   endif
 endfun
 
@@ -47,7 +47,7 @@ augroup lexima
   if g:lexima_map_escape ==? '<Esc>'
     autocmd InsertEnter * call s:setup_insmode()
   elseif g:lexima_map_escape !=# ''
-    execute 'inoremap <silent> ' . g:lexima_map_escape . ' <C-r>=lexima#insmode#escape()<CR><Esc>'
+    execute 'inoremap ' . g:lexima_map_escape . ' <C-r>=lexima#insmode#escape()<CR><Esc>'
   endif
 augroup END
 
