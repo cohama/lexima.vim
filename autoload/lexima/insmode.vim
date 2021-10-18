@@ -162,6 +162,17 @@ function! lexima#insmode#_map_impl(char) abort
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
+      let input_after = ''
+    elseif has_key(rule, 'delete')
+      if type(rule.delete) ==# type('')
+        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
+      elseif type(rule.delete) ==# type(0)
+        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:char)))
+      else
+        throw 'lexima: Not applicable rule (' . string(rule) . ')'
+      endif
+      let input = input . rule.input
+      let input_after = ''
     endif
     if has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
@@ -172,6 +183,13 @@ function! lexima#insmode#_map_impl(char) abort
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
     endif
+    if has_key(rule, 'input_after_with') && has_key(rule, 'at')
+      let line = getline(search(rule.at, 'bcWn', max([0, line('.') - 20])))
+      let input = rule.input
+      let input_after = substitute(line, substitute(rule.at, '\\%#', '', ''), rule.input_after_with, '')
+    else
+      let input = rule.input
+      let input_after = rule.input_after
     " Delay calling input_impl
     " so that 'delete' and 'leave' always perform BEFORE 'input'.
     " Tips: Unlike input_impl, calling 'delete' and 'leave' offen have no side effects,
