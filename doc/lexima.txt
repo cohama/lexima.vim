@@ -344,6 +344,12 @@ input_after (String) (Optional)
 	Similar to "input" but this string is inserted after the cursor.
 	This is useful to input closing character such as ), }, ].
 
+input_after_with (Regex) (Optional)
+	Similar to "input_after" but can include backreferences which
+	reference capture groups in "at".
+	This is useful to input closing characters that include a substring
+	of the opening characters, such as "</div>".
+
 mode (String) (Optional)
 	Specify whether the rule is enabled on Insert mode and/or Command-line
 	mode.

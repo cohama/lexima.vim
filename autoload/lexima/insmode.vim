@@ -176,6 +176,10 @@ function! s:map_impl(char)
       endif
       let input = input . rule.input
       let input_after = ''
+    elseif has_key(rule, 'input_after_with') && has_key(rule, 'at')
+      let line = getline(search(rule.at, 'bcWn', max([0, line('.') - 20])))
+      let input = rule.input
+      let input_after = substitute(line, substitute(rule.at, '\\%#', '', ''), rule.input_after_with, '')
     else
       let input = rule.input
       let input_after = rule.input_after
