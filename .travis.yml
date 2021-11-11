@@ -1,10 +1,23 @@
 language: minimal
 dist: focal
+jobs:
+  include:
+    - name: neovim
+      env: THEMIS_VIM=nvim
+      install:
+        - sudo apt update -y
+        - sudo apt install -y neovim
+        - git clone https://github.com/thinca/vim-themis
+      script:
+        - nvim --version
+        - vim-themis/bin/themis --reporter spec
+    - name: vim
+      install:
+        - git clone https://github.com/thinca/vim-themis
+      script:
+        - vim --version
+        - vim-themis/bin/themis --reporter spec
 install:
-  - git clone https://github.com/thinca/vim-themis
-script:
-  - vim --version
-  - vim-themis/bin/themis --reporter spec
 branches:
   - master
   - dev
