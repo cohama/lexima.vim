@@ -23,6 +23,12 @@ function! s:setup_insmode()
     return
   endif
 
+  if !match(&backspace, 'start')
+    echohl WarningMsg
+    echom "lexima: 'backspace' option does not contain 'start'. (Recommendation: set backspace=indent,eol,start)"
+    echohl None
+  endif
+
   if v:version > 703 || (v:version == 703 && has("patch1261"))
     exe 'inoremap <buffer> <silent> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   else

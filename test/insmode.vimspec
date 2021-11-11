@@ -2,6 +2,7 @@ call themis#helper('command')
 Describe In insert mode,
 
   Before all
+    set backspace=indent,start,eol
     new | only!
   End
 
@@ -113,10 +114,29 @@ Describe In insert mode,
     It can delete one character
       call lexima#add_rule({'char': '(', 'input_after': ')'})
       call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1})
+      call lexima#add_rule({'char': '<BS>', 'at': '{{\%#}}', 'delete': 2})
       execute "normal ohoge(\<BS>\<Esc>"
       call Expect(['', 'hoge']).to_be_displayed()
       normal .
       call Expect(['', 'hoge', 'hoge']).to_be_displayed()
+    End
+
+    It can delete many characters
+      call lexima#add_rule({'char': '{', 'input_after': '}'})
+      call lexima#add_rule({'char': '<BS>', 'at': '{{\%#}}', 'input': '<BS><BS>', 'delete': 2})
+      execute "normal ofoo{{\<BS>\<Esc>"
+      call Expect(['', 'foo']).to_be_displayed()
+      normal .
+      call Expect(['', 'foo', 'foo']).to_be_displayed()
+    End
+
+    It can delete exsiting characters
+      let lines = ["foo {{}}"]
+      put =lines
+      1delete _
+      call lexima#add_rule({'char': '<BS>', 'at': '{{\%#}}', 'input': '<BS><BS>', 'delete': 2})
+      execute "normal 0f}i\<BS>\<Esc>"
+      call Expect(['foo ']).to_be_displayed()
     End
 
   End

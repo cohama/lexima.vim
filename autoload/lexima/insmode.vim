@@ -145,7 +145,7 @@ function! lexima#insmode#map_hook(when, char, expr)
   endif
 endfunction
 
-function! s:map_impl(char)
+function! s:map_impl(char) abort
   let fallback = lexima#string#to_inputtable(a:char)
   if &buftype ==# 'nofile' && !s:B.is_cmdwin()
     return fallback
@@ -170,7 +170,7 @@ function! s:map_impl(char)
       if type(rule.delete) ==# type('')
         let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
       elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:char)))
+        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(repeat('<Del>', rule.delete))))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
@@ -303,9 +303,11 @@ function! s:input(input, input_after)
   return a:input
 endfunction
 
-function! lexima#insmode#leave(len, fallback)
+function! lexima#insmode#try_leave(len) abort
+  let error = "ERROR!!!"
+  " Returns: [input, failed]
   if s:input_stack.is_empty()
-    return lexima#string#to_inputtable(a:fallback)
+    return [error, 1]
   endif
   let input = s:input_stack.peek(a:len)
   let [bufnum, lnum, col, off] = getpos('.')
@@ -313,7 +315,7 @@ function! lexima#insmode#leave(len, fallback)
   let will_input = substitute(input, "\r", '\\n\\s\\*', 'g')
   let illegal = search('\V\%#' . will_input, 'bcWn') ==# 0
   if illegal
-    return lexima#string#to_inputtable(a:fallback)
+    return [error, 1]
   endif
   for i in range(1, cr_count)
     call setline(lnum+i, substitute(getline(lnum+i), '^\s*', '', ''))
@@ -326,7 +328,16 @@ function! lexima#insmode#leave(len, fallback)
   let len = len(input) - cr_count
   let [precursor, _, postcursor] = lexima#string#take_many(curline, col-1, len)
   call setline('.', precursor . postcursor)
-  return s:input_stack.pop(a:len)
+  return [s:input_stack.pop(a:len), 0]
+endfunction
+
+function! lexima#insmode#leave(len, fallback)
+  let [input, is_failed] = lexima#insmode#try_leave(a:len)
+  if is_failed
+    return lexima#string#to_inputtable(a:fallback)
+  else
+    return input
+  endif
 endfunction
 
 function! lexima#insmode#leave_till(char, fallback)
@@ -349,8 +360,12 @@ function! lexima#insmode#leave_till_eol(fallback)
 endfunction
 
 function! lexima#insmode#delete(len, fallback)
-  call lexima#insmode#leave(a:len, a:fallback)
-  return ''
+  let [input, is_failed] = lexima#insmode#try_leave(a:len)
+  if is_failed
+    return lexima#string#to_inputtable(a:fallback)
+  else
+    return ''
+  endif
 endfunction
 
 function! lexima#insmode#delete_till(char, fallback)
