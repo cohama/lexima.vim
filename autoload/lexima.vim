@@ -85,6 +85,7 @@ let g:lexima#newline_rules = [
 \ {'char': '<CR>', 'at': '{\%#$', 'input_after': '<CR>}', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1\}'},
 \ {'char': '<CR>', 'at': '\[\%#]', 'input_after': '<CR>'},
 \ {'char': '<CR>', 'at': '\[\%#$', 'input_after': '<CR>]', 'except': '\C\v^(\s*)\S.*%#\n%(%(\s*|\1\s.+)\n)*\1\]'},
+\ {'char': '<CR>', 'at': '^```\(\S*\)\%#```', 'input': '<CR>', 'input_after': '<CR>'},
 \ ]
 
 let g:lexima#space_rules = [
