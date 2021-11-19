@@ -115,8 +115,6 @@ BASIC RULES					*lexima-basic-rules*
 	------------------------------------
 	"""|"""       "             """"""|
 	------------------------------------
-	```|```       `             ``````|
-	------------------------------------
 	(|)           <BS>          |
 	------------------------------------
 	{|}           <BS>          |
@@ -473,6 +471,11 @@ TODO						*lexima-todo*
 
 ==============================================================================
 CHANGELOG					*lexima-changelog*
+
+v1.3	Add |g:lexima_accept_pum_with_enter|.
+	(g:lexima_nvim_accept_pum_with_enter is deprecated.)
+	Add backtick newline rule.
+	Fix delete problem.
 
 v1.2	Add |lexima-space-rules|.
 	Add "except" key in |lexima-rule|
