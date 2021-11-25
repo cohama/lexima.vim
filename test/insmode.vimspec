@@ -10,6 +10,34 @@ Describe In insert mode,
     new | only!
   End
 
+  Context more complex rules
+
+    Before each
+      setlocal nocindent smartindent sw=2 ts=2 sts=2 et
+      call lexima#clear_rules()
+    End
+
+    Context new line with extra chars
+
+      Before all
+        call lexima#clear_rules()
+        call lexima#add_rule({'char': '{', 'input_after': '}'})
+        call lexima#add_rule({'char': '<Space>', 'at': '{\%#}', 'input': '<Space>', 'input_after': '<Space>'})
+        call lexima#add_rule({'char': '<cr>', 'at': '{\%#}$', 'input': '<cr>\<space>', 'input_after': ',<cr>\'})
+        call lexima#add_rule({'char': '<cr>', 'at': '{ \%# }', 'input': '<bs><cr>\<space>', 'input_after': ',<cr>\'})
+        set ft=vim
+      End
+
+      It can input correctly
+        execute "normal olet a = {\<CR>"
+        call Expect(['', 'let a = {', '      \ ,', '      \}']).to_be_displayed()
+        %delete
+        execute "normal olet a = { \<CR>"
+        call Expect(['', 'let a = {', '      \ ,', '      \}']).to_be_displayed()
+      End
+    End
+  End
+
   Context leave rules
 
     Before each
@@ -37,12 +65,18 @@ Describe In insert mode,
       call Expect(['{**};']).to_be_displayed()
     End
 
-    It can leave over cr
-      call lexima#add_rule({'char': '<cr>', 'at': '*[{\%#', 'input_after': '<CR>'})
+    It can leave one over cr
       call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
       call lexima#add_rule({'char': '}', 'leave': 1})
-      execute "normal i{\<CR>;}\<Esc>"
-      call Expect(['{', "\t;", '}']).to_be_displayed()
+      execute "normal i{\<CR>;}a\<CR>\<Esc>"
+      call Expect(['{', "\t;", "\ta", '}']).to_be_displayed()
+    End
+
+    It can leave two over cr
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      call lexima#add_rule({'char': '}', 'leave': 2})
+      execute "normal i{\<CR>;}a\<CR>\<Esc>"
+      call Expect(['{', "\t;", '}a', '']).to_be_displayed()
     End
 
     It can leave till specified char over cr
@@ -52,7 +86,7 @@ Describe In insert mode,
       call Expect(['{', "\t;", '}']).to_be_displayed()
     End
 
-    It can leave till specified char over cr
+    It can leave till specified char over cr (more complex case)
       call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
       call lexima#add_rule({'char': '}', 'leave': '}'})
       execute "normal o{\<CR>{\<CR>hoge{}}\<Esc>"
@@ -68,6 +102,17 @@ Describe In insert mode,
       call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
       normal! G.
       call Expect(['', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}', '{', "\t{", "\t\thoge{\"foo{}\"};", "\t}", '}']).to_be_displayed()
+    End
+
+    It can use at the same time as input
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      call lexima#add_rule({'char': ';', 'at': '(\%#)', 'leave': ')', 'input': ';'})
+      call lexima#add_rule({'char': '#', 'at': '(\%#)', 'leave': ')', 'input_after': '#'})
+      execute "normal ofoo(;ok\<Esc>G."
+      call Expect(['', 'foo();ok', 'foo();ok']).to_be_displayed()
+      %delete
+      execute "normal ofoo(#ok\<Esc>G."
+      call Expect(['', 'foo()ok#', 'foo()ok#']).to_be_displayed()
     End
 
   End
@@ -108,6 +153,7 @@ Describe In insert mode,
     Before each
       new
       only!
+      setlocal nocindent smartindent
       call lexima#clear_rules()
     End
 
@@ -137,6 +183,38 @@ Describe In insert mode,
       call lexima#add_rule({'char': '<BS>', 'at': '{{\%#}}', 'input': '<BS><BS>', 'delete': 2})
       execute "normal 0f}i\<BS>\<Esc>"
       call Expect(['foo ']).to_be_displayed()
+    End
+
+    It can delete till specified char
+      call lexima#add_rule({'char': '{', 'input_after': '}'})
+      call lexima#add_rule({'char': '<Space>', 'at': '{\%#}', 'input': '<Space>', 'input_after': '<Space>'})
+      call lexima#add_rule({'char': '<BS>', 'at': '{ \%# }', 'input': '<BS><BS>', 'delete': '}'})
+      execute "normal ifoo { \<BS>\<Esc>"
+      call Expect(['foo ']).to_be_displayed()
+    End
+
+    It can delete till end of line
+      let lines = ["ABCD"]
+      put =lines
+      1delete _
+      call lexima#add_rule({'char': '{', 'input_after': '}'})
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      execute "normal fBa foo {({\<C-r>=lexima#insmode#delete_till_eol('')\<CR>\<Esc>"
+      call Expect(['AB foo {({CD']).to_be_displayed()
+    End
+
+    It can delete all
+      call lexima#add_rule({'char': '{', 'input_after': '}'})
+      call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input_after': '<CR>'})
+      execute "normal ifoo {\<CR>bar {\<CR>\<C-r>=lexima#insmode#delete_all('')\<CR>\<Esc>"
+      call Expect(['foo {', "\tbar {", ""]).to_be_displayed()
+    End
+
+    It can use at the same time as input
+      call lexima#add_rule({'char': '(', 'input_after': ')'})
+      call lexima#add_rule({'char': '>', 'at': '(\%#)', 'delete': ')', 'input': '<BS><LT>', 'input_after': '>'})
+      execute "normal ofoo(>ok\<Esc>G."
+      call Expect(['', 'foo<ok>', 'foo<ok>']).to_be_displayed()
     End
 
   End

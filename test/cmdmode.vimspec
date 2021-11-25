@@ -64,6 +64,14 @@ Describe In commandline mode,
     call Expect(CmdlineInput(":hoge( :);")).to_change_cmdline_as("hoge( : );")
   End
 
+  It can leave at the same time as input
+    call lexima#add_rule({'char': '(', 'input_after': ')', 'mode': 'c'})
+    call lexima#add_rule({'char': ';', 'at': '(\%#)', 'leave': ')', 'input': ';', 'mode': 'c'})
+    call lexima#add_rule({'char': '#', 'at': '(\%#)', 'leave': ')', 'input_after': '#', 'mode': 'c'})
+    call Expect(CmdlineInput(":hoge(;ok")).to_change_cmdline_as("hoge();ok")
+    call Expect(CmdlineInput(":hoge(#ok")).to_change_cmdline_as("hoge()ok#")
+  End
+
   It can delete
     call lexima#add_rule({'char': '(', 'input_after': ')', 'mode': 'c'})
     call lexima#add_rule({'char': '<BS>', 'at': '(\%#)', 'delete': 1, 'mode': 'c'})
