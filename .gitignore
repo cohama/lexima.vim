@@ -2,3 +2,5 @@ mysession.vim
 /.plugintest.dein.cache/
 /.plugintest.vimrc
 /test/vim-themis
+/doc/tags
+
