@@ -23,7 +23,7 @@ function! s:setup_insmode()
     return
   endif
 
-  if !match(&backspace, 'start')
+  if -1 == match(&backspace, 'start')
     echohl WarningMsg
     echom "lexima: 'backspace' option does not contain 'start'. (Recommendation: set backspace=indent,eol,start)"
     echohl None
