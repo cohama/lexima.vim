@@ -165,7 +165,11 @@ function! s:regularize(rule)
     let reg_rule.syntax = [reg_rule.syntax]
   endif
   if !has_key(reg_rule, 'input')
-    let reg_rule.input = reg_rule.char
+    if has_key(reg_rule, 'leave')
+      let reg_rule.input = ''
+    else
+      let reg_rule.input = reg_rule.char
+    endif
   endif
   let reg_rule.char = lexima#string#to_upper_specialkey(reg_rule.char)
   return reg_rule

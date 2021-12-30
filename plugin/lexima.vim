@@ -11,12 +11,6 @@ if !exists('g:lexima_map_escape')
   let g:lexima_map_escape = '<Esc>'
 endif
 
-" Setup workaround to be able to map `Esc` in insert mode, in combination with
-" the "nowait" mapping. This is required in terminal mode, where escape codes
-" are being used for cursor keys, alt/meta mappings etc.
-if g:lexima_map_escape == '<Esc>' && !has('gui_running')
-  inoremap <unique> <Esc><Esc> <Esc>
-endif
 
 function! s:setup_insmode()
   if get(b:, 'lexima_disabled', 0)
@@ -29,6 +23,12 @@ function! s:setup_insmode()
     echohl None
   endif
 
+  " Setup workaround to be able to map `Esc` in insert mode, in combination with
+  " the "nowait" mapping. This is required in terminal mode, where escape codes
+  " are being used for cursor keys, alt/meta mappings etc.
+  if g:lexima_map_escape == '<Esc>' && !has('gui_running')
+    inoremap <Esc><Esc> <Esc>
+  endif
   if v:version > 703 || (v:version == 703 && has("patch1261"))
     exe 'inoremap <buffer> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
   else

@@ -19,22 +19,29 @@ Describe In insert mode,
 
     Context new line with extra chars
 
-      Before all
+      Before each
         call lexima#clear_rules()
         call lexima#add_rule({'char': '{', 'input_after': '}'})
         call lexima#add_rule({'char': '<Space>', 'at': '{\%#}', 'input': '<Space>', 'input_after': '<Space>'})
-        call lexima#add_rule({'char': '<cr>', 'at': '{\%#}$', 'input': '<cr>\<space>', 'input_after': ',<cr>\'})
-        call lexima#add_rule({'char': '<cr>', 'at': '{ \%# }', 'input': '<bs><cr>\<space>', 'input_after': ',<cr>\'})
+        call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input': '<CR>\<Space>', 'input_after': ',<CR>\'})
+        call lexima#add_rule({'char': '<CR>', 'at': '{ \%# }', 'input': '<BS><CR>\<Space>', 'input_after': ',<CR>\', 'delete': 1})
         set ft=vim
       End
 
       It can input correctly
-        execute "normal olet a = {\<CR>"
+        execute "normal olet a = {\<CR>\<Esc>"
         call Expect(['', 'let a = {', '      \ ,', '      \}']).to_be_displayed()
         %delete
-        execute "normal olet a = { \<CR>"
+        execute "normal olet a = { \<CR>\<Esc>"
         call Expect(['', 'let a = {', '      \ ,', '      \}']).to_be_displayed()
       End
+
+      It is dot-repeatable
+        execute "normal olet a = { \<CR>\<Esc>"
+        execute "normal G."
+        call Expect(['', 'let a = {', '      \ ,', '      \}', 'let a = {', '      \ ,', '      \}']).to_be_displayed()
+      End
+
     End
   End
 

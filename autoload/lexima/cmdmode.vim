@@ -72,37 +72,41 @@ endfunction
 function! lexima#cmdmode#_expand(char) abort
   let char = lexima#string#to_upper_specialkey(a:char)
   let map = s:map_dict[char]
-  let prehooks = lexima#string#to_inputtable(join(map.prehooks, ''))
-  let posthooks = lexima#string#to_inputtable(join(map.posthooks, ''))
   let pos = getcmdpos()
   let cmdline = getcmdline()
-  let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
   let rule = s:find_rule(char)
   if rule == {}
     return lexima#string#to_inputtable(char)
   else
+    let final_input = ''
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type(0)
-        let input = repeat("\<Right>", rule.leave)
+        let final_input .= repeat("\<Right>", rule.leave)
       elseif type(rule.leave) ==# type('')
         let matchidx = match(cmdline[pos-1:-1], lexima#string#to_inputtable(rule.leave))
         if matchidx ==# -1
-          let input = a:char
+          let final_input .= char
         else
-          let input = repeat("\<Right>", matchidx + 1)
+          let final_input .= repeat("\<Right>", matchidx + 1)
         endif
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
-      let input_after = ''
-    else
-      let input = rule.input
-      if has_key(rule, 'delete')
-        let input .= repeat("\<Del>", rule.delete)
-      endif
-      let input_after = rule.input_after
     endif
-    return lexima#string#to_inputtable(input) . lexima#string#to_inputtable(input_after) . repeat("\<Left>", len(lexima#string#to_inputtable(input_after)))
+    if has_key(rule, 'delete')
+      if type(rule.delete) ==# type(0)
+        let final_input .= repeat("\<Del>", rule.delete)
+      elseif type(rule.delete) ==# type('')
+        let matchidx = match(cmdline[pos-1:-1], lexima#string#to_inputtable(rule.leave))
+        if matchidx ==# -1
+          let final_input .= char
+        else
+          let final_input .= repeat("\<Del>", matchidx + 1)
+        endif
+      endif
+    endif
+    let final_input .= rule.input . rule.input_after
+    return lexima#string#to_inputtable(final_input) . repeat("\<Left>", len(lexima#string#to_inputtable(rule.input_after)))
   endif
 endfunction
 
