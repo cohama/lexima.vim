@@ -115,7 +115,9 @@ function! s:find_rule(char)
   for rule in rules
     if rule.mode =~# 'c' || rule.mode =~# cmdtype
       if rule.char ==# a:char
-        let [pre_at, post_at] = map(split(rule.at, '\\%#', 1) + ['', ''], 'v:val . "$"')[0:1]
+        let [pre_at, post_at] = split(rule.at, '\\%#', 1)[0:1]
+        let pre_at .= '$'
+        let post_at = '^' . post_at
         if precursor =~# pre_at && postcursor =~# post_at
           return rule
         endif
