@@ -102,7 +102,7 @@ Describe endwise rule
       call Expect("begin\<CR>").to_change_input_as("begin\n\nend")
       call Expect("x = begin\<CR>").to_change_input_as("x = begin\n\nend")
       call Expect("@eval begin\<CR>").to_change_input_as("@eval begin\n\nend")
-      call Expect("eval(quote\<CR>").to_change_input_as("eval(quote\n\nend")
+      call Expect("ex = quote\<CR>").to_change_input_as("ex = quote\n\nend")
       call Expect("if x\<CR>").to_change_input_as("if x\n\nend")
       call Expect("x = if y\<CR>").to_change_input_as("x = if y\n\nend")
       call Expect("for i in 1:10\<CR>").to_change_input_as("for i in 1:10\n\nend")
