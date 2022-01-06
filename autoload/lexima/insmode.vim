@@ -184,7 +184,8 @@ function! lexima#insmode#_map_impl(char) abort
       endif
     endif
     if get(rule, 'with_submatch', 0)
-      let context = join(getline(at_pos[0], line('.') + 20), "\r")
+      let context = join(getline(at_pos[0], line('.') + 20), "\r")[at_pos[1] - 1:]
+      echom 'context: ' context
       let pattern = substitute(rule.at, '\\%#', '', '')
       let base_string = matchstr(context, pattern)
       let input = substitute(base_string, pattern, rule.input, '')

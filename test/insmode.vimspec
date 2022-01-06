@@ -348,7 +348,7 @@ Describe In insert mode,
     End
 
     It can be used with simple rule
-      call lexima#add_rule({'char': 'b', 'at': '\(a\)\%#', 'input_after': '\1', 'with_submatch': 1 })
+      call lexima#add_rule({'char': 'b', 'at': '\(a\+\)\%#', 'input_after': '\1', 'with_submatch': 1 })
       execute "normal ibab\<Esc>"
       call Expect(['baba']).to_be_displayed()
     End
@@ -358,6 +358,7 @@ Describe In insert mode,
       call lexima#add_rule({'char': '<', 'input_after': '>'})
       call lexima#add_rule({'char': '>', 'at': '<\(\w\+\)\%#>', 'leave': 1, 'input_after': '</\1>', 'with_submatch': 1})
       call Expect('<div>').to_change_input_as('<div></div>')
+      call Expect('<html><div>').to_change_input_as('<html><div></div></html>')
     End
 
     It can be used on tex
