@@ -341,4 +341,36 @@ Describe In insert mode,
 
   End
 
+  Context with submatch
+
+    Before each
+      call lexima#clear_rules()
+    End
+
+    It can be use on html tag
+      set ft=html
+      call lexima#add_rule({'char': '<', 'input_after': '>'})
+      call lexima#add_rule({'char': '>', 'at': '<\(\w\+\)\%#>', 'leave': 1, 'input_after': '</\1>', 'with_submatch': 1})
+      call Expect('<div>').to_change_input_as('<div></div>')
+    End
+
+    It can be use on tex
+      set ft=tex
+      call lexima#add_rule({
+      \ 'filetype': 'tex',
+      \ 'char': '<CR>',
+      \ 'input': '<CR>',
+      \ 'input_after': '<CR>\\end{\1}',
+      \ 'at': '^.*\\begin{\([^}]*\)}\(\[.*\]\)*\%#$',
+      \ 'with_submatch': 1,
+      \ })
+      execute "normal i\\begin{equation}\<CR>\<Esc>"
+      call Expect(['\begin{equation}', '', '\end{equation}']).to_be_displayed()
+      %delete _
+      normal! .
+      call Expect(['\begin{equation}', '', '\end{equation}']).to_be_displayed()
+    End
+
+  End
+
 End
