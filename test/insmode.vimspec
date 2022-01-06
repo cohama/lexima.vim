@@ -347,14 +347,20 @@ Describe In insert mode,
       call lexima#clear_rules()
     End
 
-    It can be use on html tag
+    It can be used with simple rule
+      call lexima#add_rule({'char': 'b', 'at': '\(a\)\%#', 'input_after': '\1', 'with_submatch': 1 })
+      execute "normal ibab\<Esc>"
+      call Expect(['baba']).to_be_displayed()
+    End
+
+    It can be used on html tag
       set ft=html
       call lexima#add_rule({'char': '<', 'input_after': '>'})
       call lexima#add_rule({'char': '>', 'at': '<\(\w\+\)\%#>', 'leave': 1, 'input_after': '</\1>', 'with_submatch': 1})
       call Expect('<div>').to_change_input_as('<div></div>')
     End
 
-    It can be use on tex
+    It can be used on tex
       set ft=tex
       call lexima#add_rule({
       \ 'filetype': 'tex',

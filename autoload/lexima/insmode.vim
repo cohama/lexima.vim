@@ -186,14 +186,9 @@ function! lexima#insmode#_map_impl(char) abort
     if get(rule, 'with_submatch', 0)
       let context = join(getline(at_pos[0], line('.') + 20), "\r")
       let pattern = substitute(rule.at, '\\%#', '', '')
-      let input = substitute(context, pattern, rule.input, '')
-      let input_after = substitute(context, pattern, rule.input_after, '')
-      echom 'context: ' context
-      echom 'patter: ' pattern
-      echom 'old input: ' rule.input
-      echom 'old input_after: ' rule.input_after
-      echom 'new input: ' input
-      echom 'new input_after: ' input_after
+      let base_string = matchstr(context, pattern)
+      let input = substitute(base_string, pattern, rule.input, '')
+      let input_after = substitute(base_string, pattern, rule.input_after, '')
     else
       let input = rule.input
       let input_after = rule.input_after
