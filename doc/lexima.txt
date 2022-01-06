@@ -1,4 +1,4 @@
-*lexima.txt*	Auto close parentheses and repeat by dot dot dot...
+*lexima.txt*	Auto close paentheses and repeat by dot dot dot...
 
 Version : 2.0
 Author  : cohama / cohama@live.jp
@@ -418,6 +418,26 @@ priority (Number) (Optional)			*lexima-rules-priority*
 	If omitted, the priority is treated as 0
 
 
+with_submatch (Number/Boolean) (Optional)	*lexima-rules-with_submatch*
+	If set as truthy, you can include backreferences which
+	reference capture groups in "at" and use submatch pattern in "input"
+	and "input_after".
+	This is useful to input closing characters that include a substring
+	of the opening characters, such as "</div>".
+	Note if this set, "input" and "input_after" work as replace
+	expression, which can use |sub-replace-special| such as "\1", but be
+	careful about using backslash.
+	For example,
+>
+	call lexima#add_rule({'char': '>',
+			    \ 'at': '<\(\w\+\)\%#>',
+			    \ 'leave': '>',
+			    \ 'input_after': '</\1>',
+			    \ 'with_submatch': 1})
+<
+	This rule performs <div|> => <div>|</div> with pressing ">".
+
+
 ------------------------------------------------------------------------------
 PRIORITIES					*lexima-priorities*
 
@@ -484,6 +504,8 @@ v2.0	Does not break undo until input <CR>.
 	"leave" and "delete" can be used with "input".
 	(See |lexima-rules-leave|, |lexima-rules-delete|)
 	Breaking Change: "leave" also counts <CR>. (Older version does not. This was a bug.)
+	Add |lexima-rules-with_submatch|.
+	Fix "at" pattern check in cmdline mode.
 
 v1.3	Add |g:lexima_accept_pum_with_enter|.
 	(g:lexima_nvim_accept_pum_with_enter is deprecated.)
@@ -494,7 +516,7 @@ v1.2	Add |lexima-space-rules|.
 	Add "except" key in |lexima-rule|
 	Add |lexima#expand()| function.
 	Add Elixir endwise rule.
-	Impove rule finding perfomance.
+	Improve rule finding performance.
 	Fix abbreviation problem.
 	Fix conflict problem with auto-completion plugin e.g. neocomplete
 
