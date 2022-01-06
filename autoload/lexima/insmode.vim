@@ -149,7 +149,7 @@ function! lexima#insmode#_map_impl(char) abort
   if exists('b:lexima_disabled') && b:lexima_disabled
     return fallback
   endif
-  let rule = s:find_rule(a:char)
+  let [rule, at_pos] = s:find_rule(a:char)
   if rule == {}
     return fallback
   else
@@ -183,18 +183,29 @@ function! lexima#insmode#_map_impl(char) abort
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
     endif
-    if has_key(rule, 'input_after_with') && has_key(rule, 'at')
-      let line = getline(search(rule.at, 'bcWn', max([0, line('.') - 20])))
-      let input = rule.input
-      let input_after = substitute(line, substitute(rule.at, '\\%#', '', ''), rule.input_after_with, '')
+    if get(rule, 'with_submatch', 0)
+      let context = join(getline(at_pos[0], line('.') + 20), "\r")
+      let pattern = substitute(rule.at, '\\%#', '', '')
+      let input = substitute(context, pattern, rule.input, '')
+      let input_after = substitute(context, pattern, rule.input_after, '')
+      echom 'context: ' context
+      echom 'patter: ' pattern
+      echom 'old input: ' rule.input
+      echom 'old input_after: ' rule.input_after
+      echom 'new input: ' input
+      echom 'new input_after: ' input_after
     else
       let input = rule.input
       let input_after = rule.input_after
+    endif
     " Delay calling input_impl
     " so that 'delete' and 'leave' always perform BEFORE 'input'.
     " Tips: Unlike input_impl, calling 'delete' and 'leave' offen have no side effects,
     " these return just a string such as <Del>, <C-g>U<Right> unless multiline
-    let final_input .= printf('<C-r>=lexima#insmode#_input_impl(%s, %s)<CR>', string(lexima#string#to_mappable(rule.input)), string(lexima#string#to_mappable(rule.input_after)))
+    let final_input .= printf('<C-r>=lexima#insmode#_input_impl(%s, %s)<CR>',
+    \ string(lexima#string#to_mappable(input)),
+    \ string(lexima#string#to_mappable(input_after))
+    \ )
     return lexima#string#to_inputtable(final_input)
   endif
 endfunction
@@ -204,22 +215,22 @@ function! s:find_rule(char)
   let searchlimit = max([0, line('.') - 20])
   let rules = lexima#insmode#get_map_rules(a:char)
   for rule in rules
-    let endpos = searchpos(rule.at, 'bcWn', searchlimit)
+    let at_pos = searchpos(rule.at, 'bcWn', searchlimit)
     let excepted = has_key(rule, 'except') ?
     \              searchpos(rule.except, 'bcWn', searchlimit) !=# [0, 0] : 0
-    if endpos !=# [0, 0] && !excepted
+    if at_pos !=# [0, 0] && !excepted
       if empty(rule.syntax)
-        return rule
+        return [rule, at_pos]
       else
         for syn in syntax_chain
           if index(rule.syntax, syn) >=# 0
-            return rule
+            return [rule, at_pos]
           endif
         endfor
       endif
     endif
   endfor
-  return {}
+  return [{}, [0, 0]]
 endfunction
 
 function! lexima#insmode#_priority_order(rule1, rule2)
