@@ -363,6 +363,7 @@ Describe In insert mode,
 
     It can be used on tex
       set ft=tex
+      set expandtab shiftwidth=2
       call lexima#add_rule({
       \ 'filetype': 'tex',
       \ 'char': '<CR>',
@@ -371,11 +372,29 @@ Describe In insert mode,
       \ 'at': '^.*\\begin{\([^}]*\)}\(\[.*\]\)*\%#$',
       \ 'with_submatch': 1,
       \ })
-      execute "normal i\\begin{equation}\<CR>\<Esc>"
-      call Expect(['\begin{equation}', '', '\end{equation}']).to_be_displayed()
+      execute "normal o\\begin{equation}\<CR>\<Esc>"
+      call Expect([
+      \ '',
+      \ '\begin{equation}',
+      \ '',
+      \ '\end{equation}']).to_be_displayed()
+      normal! G.
+      call Expect([
+      \ '',
+      \ '\begin{equation}',
+      \ '',
+      \ '\end{equation}',
+      \ '\begin{equation}',
+      \ '',
+      \ '\end{equation}']).to_be_displayed()
       %delete _
-      normal! .
-      call Expect(['\begin{equation}', '', '\end{equation}']).to_be_displayed()
+      execute "normal i\\begin{foo}\<CR>\\begin{bar}\<CR>\<Esc>"
+      call Expect([
+      \ '\begin{foo}',
+      \ '  \begin{bar}',
+      \ '',
+      \ '  \end{bar}',
+      \ '\end{foo}']).to_be_displayed()
     End
 
   End

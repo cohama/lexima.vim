@@ -149,7 +149,7 @@ function! lexima#insmode#_map_impl(char) abort
   if exists('b:lexima_disabled') && b:lexima_disabled
     return fallback
   endif
-  let [rule, at_pos] = s:find_rule(a:char)
+  let [rule, at_start_pos] = s:find_rule(a:char)
   if rule == {}
     return fallback
   else
@@ -184,7 +184,9 @@ function! lexima#insmode#_map_impl(char) abort
       endif
     endif
     if get(rule, 'with_submatch', 0)
-      let context = join(getline(at_pos[0], line('.') + 20), "\r")[at_pos[1] - 1:]
+      let searchlimit = max([0, line('.') - 20])
+      let at_end_pos = searchpos(rule.at, 'bcWne', searchlimit)
+      let context = join(getline(at_start_pos[0], at_end_pos[0]), "\n")[at_start_pos[1] - 1:at_end_pos[1]]
       let pattern = substitute(rule.at, '\\%#', '', '')
       let base_string = matchstr(context, pattern)
       let input = substitute(base_string, pattern, rule.input, '')
