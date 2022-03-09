@@ -103,23 +103,33 @@ function! lexima#insmode#clear_rules()
   let s:map_dict = {}
 endfunction
 
+let lexima#insmode#_save_event_ignore = ""
 function! lexima#insmode#_expand(char) abort
   let fallback = lexima#string#to_inputtable(a:char)
   if !has_key(s:map_dict, a:char) || mode() !=# 'i'
     return fallback
   endif
   let map = s:map_dict[a:char]
+  if has('nvim-0.3.0') || v:version > 802 || (v:version == 802 && has('patch1978'))
+    let set_ei = "\<Cmd>let g:lexima#insmode#_save_event_ignore = &eventignore\<CR>\<Cmd>set eventignore+=CmdlineLeave\<CR>"
+    let restore_ei = "\<Cmd>let &eventignore = g:lexima#insmode#_save_event_ignore\<CR>"
+  else
+    let set_ei = ""
+    let restore_ei = ""
+  endif
   let prehook = lexima#string#to_inputtable(
   \ (type(map.prehook)) ==# type(function("tr")) ? call(map.prehook, [a:char]) : map.prehook
   \ )
   let posthook = lexima#string#to_inputtable(
   \ (type(map.posthook)) ==# type(function("tr")) ? call(map.posthook, [a:char]) : map.posthook
   \ )
-  return printf("%s\<C-r>=lexima#insmode#_map_impl(%s)\<CR>%s",
-              \ prehook,
-              \ string(a:char),
-              \ posthook
-              \ )
+  return printf("%s%s\<C-r>=lexima#insmode#_map_impl(%s)\<CR>%s%s",
+  \ set_ei,
+  \ prehook,
+  \ string(a:char),
+  \ posthook,
+  \ restore_ei
+  \ )
 endfunction
 
 function! lexima#insmode#define_altanative_key(char, mapping)
