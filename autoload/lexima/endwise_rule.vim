@@ -6,7 +6,7 @@ let s:cr_key = '<CR>'
 function! lexima#endwise_rule#make()
   let rules = []
   " vim
-  for at in ['fu', 'fun', 'func', 'funct', 'functi', 'functio', 'function', 'if', 'wh', 'whi', 'whil', 'while', 'for', 'try']
+  for at in ['fu', 'fun', 'func', 'funct', 'functi', 'functio', 'function', 'if', 'wh', 'whi', 'whil', 'while', 'for', 'try', 'def']
     call add(rules, s:make_rule('^\s*' . at . '\>.*\%#$', 'end' . at, 'vim', []))
   endfor
 
