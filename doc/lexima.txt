@@ -490,6 +490,20 @@ TIPS						*lexima-tips*
 	imap <C-h> <BS>
 	cmap <C-h> <BS>
 
+2. <CR> (or any other) key conflicts with other plugin.
+
+You can manually remap <CR> like bellow.
+>
+	inoremap <CR> <Plug>(awesome-plugin-action)<C-r>=lexima#expand('CR', 'i')<CR>
+<
+3. <Esc> key mapping causes some problems (plugin conflicts, terminal settings, etc.)
+
+You can disable <Esc> mapping by the following.
+>
+	let g:lexima_map_escape = ""
+<
+Note taht this setting disables some features of lexima.vim. For example, dot
+repeat on multiline input will no longer work.
 
 
 ==============================================================================
