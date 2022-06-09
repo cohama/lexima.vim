@@ -518,6 +518,11 @@ TODO						*lexima-todo*
 ==============================================================================
 CHANGELOG					*lexima-changelog*
 
+v2.1	Breaking Change: lexima.vim also works on buftype=nofile.
+	  Set |g:lexima_disable_on_nofile| to 1 if you prefer previous behavior.
+	Add vim9 script rules.
+	Fix submatch problem.
+
 v2.0	Does not break undo until input <CR>.
 	"leave" and "delete" can be used with "input".
 	(See |lexima-rules-leave|, |lexima-rules-delete|)
