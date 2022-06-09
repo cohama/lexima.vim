@@ -143,7 +143,7 @@ endfunction
 
 function! lexima#insmode#_map_impl(char) abort
   let fallback = lexima#string#to_inputtable(a:char)
-  if &buftype ==# 'nofile' && !s:B.is_cmdwin()
+  if g:lexima_disable_on_nofile && &buftype ==# 'nofile'
     return fallback
   endif
   if exists('b:lexima_disabled') && b:lexima_disabled

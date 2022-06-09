@@ -6,6 +6,7 @@ Describe default rule
   End
 
   After each
+    let g:lexima_disable_on_nofile = 0
     new | only!
   End
 
@@ -139,6 +140,7 @@ Describe default rule
   End
 
   It is disabled when buftype=nofile
+    let g:lexima_disable_on_nofile = 1
     setlocal buftype=nofile
     call Expect('hoge((').to_change_input_as('hoge((')
   End
