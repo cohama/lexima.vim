@@ -10,7 +10,9 @@ function! lexima#string#to_mappable(str)
 endfunction
 
 function! lexima#string#to_upper_specialkey(str) abort
-  return substitute(a:str, '\v\<\zs[A-Za-z\-]{-}\ze\>', '\=toupper(submatch(0))', 'g')
+  let str = substitute(a:str, ' ', '<SPACE>', 'g')
+  let str = substitute(str, '\v\<\zs[A-Za-z\-]{-}\ze\>', '\=toupper(submatch(0))', 'g')
+  return str
 endfunction
 
 " recursively take n characters
