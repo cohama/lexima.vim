@@ -250,6 +250,11 @@ g:lexima_accept_pum_with_enter			*g:lexima_accept_pum_with_enter*
 	" Always insert new line regardless if popup menu is visible
 	let g:lexima_accept_pum_with_enter = 0
 
+g:lexima_accept_pumvim_with_enter		*g:lexima_accept_pumvim_with_enter*
+	If it is 1, enables <cr> to be used to accept completions when the
+	|pum.vim| (https://github.com/Shougo/pum.vim) is visible.
+	default value: 0
+
 g:lexima_ctrlh_as_backspace			*g:lexima_ctrlh_as_backspace*
 	If it is 1, <C-h> can be used in the same manner as <BS>.
 	default value: 0

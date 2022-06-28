@@ -82,11 +82,18 @@ function! lexima#insmode#add_rules(rule) abort
   " Define imap in the last of the function in order to avoid invalid mapping
   " definition when an error occur.
   if newchar_flg
-    if a:rule.char == '<CR>' && g:lexima_accept_pum_with_enter
-      execute printf("inoremap <expr><silent> %s pumvisible() ? \"\\<C-y>\" : lexima#expand(%s, 'i')",
-                    \ a:rule.char,
-                    \ string(lexima#string#to_mappable(a:rule.char))
-                    \ )
+    if a:rule.char == '<CR>'
+      if g:lexima_accept_pumvim_with_enter
+        execute printf("inoremap <expr><silent> %s pum#visible() ? '<Cmd>call pum#map#confirm()<CR>' : lexima#expand(%s, 'i')",
+                      \ a:rule.char,
+                      \ string(lexima#string#to_mappable(a:rule.char))
+                      \ )
+      elseif g:lexima_accept_pum_with_enter
+        execute printf("inoremap <expr><silent> %s pumvisible() ? \"\\<C-y>\" : lexima#expand(%s, 'i')",
+                      \ a:rule.char,
+                      \ string(lexima#string#to_mappable(a:rule.char))
+                      \ )
+      endif
     else
       execute printf("inoremap <expr><silent> %s lexima#expand(%s, 'i')",
                     \ a:rule.char,
