@@ -19,7 +19,7 @@ if exists('g:lexima_nvim_accept_pum_with_enter')
   let g:lexima_accept_pum_with_enter = g:lexima_nvim_accept_pum_with_enter
 endif
 let g:lexima_accept_pum_with_enter = get(g:, 'lexima_accept_pum_with_enter', has('nvim'))
-let g:lexima_accept_pum_with_enter = get(g:, 'lexima_accept_pumvim_with_enter', 0)
+let g:lexima_accept_pumvim_with_enter = get(g:, 'lexima_accept_pumvim_with_enter', 0)
 let g:lexima_ctrlh_as_backspace = get(g:, 'lexima_ctrlh_as_backspace', 0)
 let g:lexima_disable_on_nofile = get(g:, 'lexima_disable_on_nofile', 0)
 
