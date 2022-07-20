@@ -323,13 +323,15 @@ You can define your own rule by using |lexima#add_rule()|.
 A rule is described as a dictionary having the following keys.
 
 char (String) (Required)			*lexima-rules-char*
-	Define the key to map.
+	Define the key to map. This is used to lhs of |imap|.
 
 at (Regex) (Optional)				*lexima-rules-at*
 	The rule is applied when this regular expression matches around the
 	cursor position.
 	'\%#' can be used to represent the cursor position. (See |/\%#|)
 	If omitted, the rule is always applied.
+	Note that this type is Regex, not String. This means backslash
+	has a special meaning. e.g. "\sin" will be matched to "<SPACE> + in".
 
 except (Regex) (Optional)			*lexima-rules-except*
 	Like "at", but the rule is not applied when this regular expression
