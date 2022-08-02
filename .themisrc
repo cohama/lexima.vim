@@ -71,7 +71,20 @@ call themis#helper#expect#define_matcher('to_change_cmdline_as', 'g:inner_input 
 
 function! ToChangeInputAs(input, shown)
   %delete _
-  execute 'normal i' . a:input . "\<Esc>"
+  let input = ""
+  let i = 0
+  while i < len(a:input)
+    let char = a:input[i]
+    if char ==# "\<BS>"[0]
+      let input .= a:input[i:i+2]
+      let i += 3
+      continue
+    endif
+    let input .= "\<Ignore>" . char
+    let i += 1
+  endwhile
+  " let input = substitute(a:input, ".", "\\0\<Ignore>", 'g')
+  execute 'normal i' . input . "\<Esc>"
   return join(getline(1, '$'), "\n") ==# a:shown
 endfunction
 

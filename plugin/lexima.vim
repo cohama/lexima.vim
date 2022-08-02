@@ -30,10 +30,12 @@ function! s:setup_insmode()
     inoremap <Esc><Esc> <Esc>
   endif
   if g:lexima_map_escape !=# ''
+    " let lexima_escape = lexima#insmode#mapping_expr("lexima#insmode#escape()")
+    let g:_lexima_escape = "\<Cmd>call lexima#insmode#_do('lexima#insmode#escape()')\<CR>"
     if v:version > 703 || (v:version == 703 && has("patch1261"))
-      exe 'inoremap <silent> <buffer> <nowait> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
+      exe 'inoremap <expr><silent><buffer><nowait> ' . g:lexima_map_escape . " g:_lexima_escape"
     else
-      exe 'inoremap <silent> <buffer> '.g:lexima_map_escape.' <C-r>=lexima#insmode#escape()<CR><Esc>'
+      exe 'inoremap <silent> <buffer> ' . g:lexima_map_escape . ' ' . lexima_escape
     endif
   endif
 endfun

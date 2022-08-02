@@ -115,11 +115,21 @@ function! lexima#insmode#_expand(char) abort
   let posthook = lexima#string#to_inputtable(
   \ (type(map.posthook)) ==# type(function("tr")) ? call(map.posthook, [a:char]) : map.posthook
   \ )
-  return printf("%s\<C-r>=lexima#insmode#_map_impl(%s)\<CR>%s",
-              \ prehook,
-              \ string(a:char),
-              \ posthook
-              \ )
+  return prehook . lexima#insmode#_map_impl(a:char) . posthook
+endfunction
+
+function! lexima#insmode#mapping_expr(expr) abort
+  " Do something (e.g. call setline()), then input something dot-repeatably.
+  if 0
+    return "\<C-r>=" . a:expr . "\<CR>"
+  else
+    return "\<Cmd>call lexima#insmode#_do(" . string(a:expr) . ")\<CR>"
+  endif
+endfunction
+
+function! lexima#insmode#_do(expr) abort
+  let input = eval(a:expr)
+  call feedkeys(input, "ni")
 endfunction
 
 function! lexima#insmode#define_altanative_key(char, mapping)
@@ -156,29 +166,30 @@ function! lexima#insmode#_map_impl(char) abort
     let final_input = ''
     if has_key(rule, 'leave')
       if type(rule.leave) ==# type('')
-        let final_input .= lexima#insmode#leave_till(rule.leave, lexima#string#to_mappable(a:char))
+        let final_input .= lexima#insmode#mapping_expr(printf('lexima#insmode#leave_till(%s, %s)',
+        \ string(lexima#string#to_mappable(rule.leave)),
+        \ string(lexima#string#to_mappable(a:char))
+        \ ))
       elseif type(rule.leave) ==# type(0)
-        let final_input .= lexima#insmode#leave(rule.leave, lexima#string#to_mappable(a:char))
+        let final_input .= lexima#insmode#mapping_expr(printf('lexima#insmode#leave(%s, %s)',
+        \ rule.leave,
+        \ string(lexima#string#to_mappable(a:char))
+        \ ))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
-      let input_after = ''
-    elseif has_key(rule, 'delete')
-      if type(rule.delete) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
-      elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:char)))
-      else
-        throw 'lexima: Not applicable rule (' . string(rule) . ')'
-      endif
-      let input = input . rule.input
-      let input_after = ''
     endif
     if has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
-        let final_input .= lexima#insmode#delete_till(rule.delete, lexima#string#to_mappable(a:char))
+        let final_input .= lexima#insmode#mapping_expr(printf('lexima#insmode#delete_till(%s, %s)',
+        \ string(lexima#string#to_mappable(rule.delete)),
+        \ string(lexima#string#to_mappable(a:char))
+        \ ))
       elseif type(rule.delete) ==# type(0)
-        let final_input .= lexima#insmode#delete(rule.delete, lexima#string#to_mappable(repeat("\<Del>", rule.delete)))
+        let final_input .= lexima#insmode#mapping_expr(printf('lexima#insmode#delete(%s, %s)',
+        \ rule.delete,
+        \ string(lexima#string#to_mappable(a:char))
+        \ ))
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
@@ -199,10 +210,10 @@ function! lexima#insmode#_map_impl(char) abort
     " so that 'delete' and 'leave' always perform BEFORE 'input'.
     " Tips: Unlike input_impl, calling 'delete' and 'leave' offen have no side effects,
     " these return just a string such as <Del>, <C-g>U<Right> unless multiline
-    let final_input .= printf('<C-r>=lexima#insmode#_input_impl(%s, %s)<CR>',
+    let final_input .= lexima#insmode#mapping_expr(printf('lexima#insmode#_input_impl(%s, %s)',
     \ string(lexima#string#to_mappable(input)),
     \ string(lexima#string#to_mappable(input_after))
-    \ )
+    \ ))
     return lexima#string#to_inputtable(final_input)
   endif
 endfunction
@@ -459,14 +470,10 @@ endfunction
 
 function! lexima#insmode#escape()
   let pos_save = getpos('.')
-  try
-    let ret = lexima#insmode#leave_all('')
-    let ret .= "\<C-r>=setpos('.', " . string(pos_save) . ")?'':''\<CR>"
-  catch
-    call setpos('.', pos_save)
-    let ret = ''
-  endtry
+  let ret = lexima#insmode#leave_all('')
+  call setpos('.', pos_save)
   call lexima#insmode#clear_stack()
+  let ret .= "\<Esc>"
   return ret
 endfunction
 
