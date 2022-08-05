@@ -8,9 +8,15 @@ Basically, you can automatically close pairs such as `()`, `{}`, `""`, ...
 But in advance, you can also customize the rule to automatically input
 any character on any context.
 
-Screen Shots
------------
+SCREEN SHOTS
+------------
 ![Screen Shot](http://i.gyazo.com/af2d7a59c82f93e49a6fd424dbbf6f88.gif)
+
+
+REQUIREMENTS
+------------
+
+- Vim 8.1+ or Neovim 0.4.3+
 
 
 DEFAULT RULES
