@@ -162,17 +162,6 @@ function! lexima#insmode#_map_impl(char) abort
       else
         throw 'lexima: Not applicable rule (' . string(rule) . ')'
       endif
-      let input_after = ''
-    elseif has_key(rule, 'delete')
-      if type(rule.delete) ==# type('')
-        let input = printf('<C-r>=lexima#insmode#delete_till(%s, %s)<CR>', string(rule.delete), string(lexima#string#to_mappable(a:char)))
-      elseif type(rule.delete) ==# type(0)
-        let input = printf('<C-r>=lexima#insmode#delete(%d, %s)<CR>', rule.delete, string(lexima#string#to_mappable(a:char)))
-      else
-        throw 'lexima: Not applicable rule (' . string(rule) . ')'
-      endif
-      let input = input . rule.input
-      let input_after = ''
     endif
     if has_key(rule, 'delete')
       if type(rule.delete) ==# type('')
