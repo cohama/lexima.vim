@@ -11,6 +11,16 @@ if !exists('g:lexima_map_escape')
   let g:lexima_map_escape = '<Esc>'
 endif
 
+function g:_lexima_save_cursor_pos() abort
+  let s:lexima_saved_pos = getpos('.')
+endfunction
+
+function! g:_lexima_restore_cursor_pos() abort
+  call setpos('.', s:lexima_saved_pos)
+endfunction
+
+nnoremap x :call <SID>save_cursor_pos()<CR>
+
 
 function! s:setup_insmode()
   if get(b:, 'lexima_disabled', 0)
@@ -31,9 +41,9 @@ function! s:setup_insmode()
   endif
   if g:lexima_map_escape !=# ''
     " let lexima_escape = lexima#insmode#mapping_expr("lexima#insmode#escape()")
-    let g:_lexima_escape = "\<Cmd>call lexima#insmode#_do('lexima#insmode#escape()')\<CR>"
+    let g:_lexima_escape_func = "\<Cmd>call g:_lexima_save_cursor_pos()\<CR>\<Cmd>call lexima#insmode#_do('lexima#insmode#escape()')\<CR>\<Cmd>call g:_lexima_restore_cursor_pos()\<CR>"
     if v:version > 703 || (v:version == 703 && has("patch1261"))
-      exe 'inoremap <expr><silent><buffer><nowait> ' . g:lexima_map_escape . " g:_lexima_escape"
+      exe 'inoremap <expr><silent><buffer><nowait> ' . g:lexima_map_escape . " g:_lexima_escape_func"
     else
       exe 'inoremap <silent> <buffer> ' . g:lexima_map_escape . ' ' . lexima_escape
     endif
