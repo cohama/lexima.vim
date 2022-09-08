@@ -19,9 +19,6 @@ function! g:_lexima_restore_cursor_pos() abort
   call setpos('.', s:lexima_saved_pos)
 endfunction
 
-nnoremap x :call <SID>save_cursor_pos()<CR>
-
-
 function! s:setup_insmode()
   if get(b:, 'lexima_disabled', 0)
     return
