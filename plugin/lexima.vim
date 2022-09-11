@@ -16,7 +16,9 @@ function g:_lexima_save_cursor_pos() abort
 endfunction
 
 function! g:_lexima_restore_cursor_pos() abort
-  call setpos('.', s:lexima_saved_pos)
+  let [bufnum, lnum, col, off] = s:lexima_saved_pos
+  let col2 = col > 1 ? col - 1 : col
+  call setpos('.', [bufnum, lnum, col2, off])
 endfunction
 
 function! s:setup_insmode()
