@@ -175,6 +175,13 @@ function! lexima#insmode#_map_impl(char) abort
     if get(rule, 'with_submatch', 0)
       let searchlimit = max([0, line('.') - 20])
       let at_end_pos = searchpos(rule.at, 'bcWne', searchlimit)
+      if at_end_pos == [0, 0]
+        let at_end_pos = searchpos(rule.at, 'cWne', searchlimit)
+        if at_end_pos == [0, 0]
+          echoerr "Pattern not found. This is lexima's bug. Please report an issue with the following information."
+          echoerr rule
+        endif
+      endif
       let context = join(getline(at_start_pos[0], at_end_pos[0]), "\n")[at_start_pos[1] - 1:at_end_pos[1]]
       let pattern = substitute(rule.at, '\\%#', '', '')
       let base_string = matchstr(context, pattern)
