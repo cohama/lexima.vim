@@ -270,7 +270,7 @@ b:lexima_disabled				*b:lexima_disabled*
 	" Disable lexima.vim in clojure buffers
 	autocmd FileType clojure let b:lexima_disabled = 1
 
-b:lexima_disable_abbrev_trigger			*g:lexima_disable_abbrev_trigger*
+b:lexima_disable_abbrev_trigger			*b:lexima_disable_abbrev_trigger*
 	Same as |g:lexima_disable_abbrev_trigger| but only affects the
 	specified buffer.
 
