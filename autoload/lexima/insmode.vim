@@ -42,8 +42,8 @@ endfunction
 
 function! lexima#insmode#_default_prehook(char) abort
   " Add <C-]> prehook to expand abbreviation.
-  if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
-  \ && lexima#string#to_inputtable(a:char) !~ '.*\k$'
+  if lexima#string#to_inputtable(a:char) !~ '.*\k$'
+  \ && (!g:lexima_disable_abbrev_trigger && !get(b:, 'lexima_disable_abbrev_trigger', 0))
     if pumvisible() && a:char == '<CR>'
       return '<C-y><C-]>'
     else

@@ -339,6 +339,19 @@ Describe In insert mode,
       call Expect("foo\<CR>").to_change_input_as("bar\n")
     End
 
+    It disabled by g:lexima_disable_abbrev_trigger
+      call Expect('foo(').to_change_input_as('bar()')
+      let g:lexima_disable_abbrev_trigger = 1
+      call Expect('foo(').to_change_input_as('foo()')
+      let g:lexima_disable_abbrev_trigger = 0
+    End
+
+    It disabled by b:lexima_disable_abbrev_trigger
+      call Expect('foo(').to_change_input_as('bar()')
+      let b:lexima_disable_abbrev_trigger = 1
+      call Expect('foo(').to_change_input_as('foo()')
+    End
+
   End
 
   Context with submatch

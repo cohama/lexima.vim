@@ -258,6 +258,11 @@ g:lexima_disable_on_nofile			*g:lexima_disable_on_nofile*
 	If it is 1, all feature of lexima.vim disabled.
 	default value: 0
 
+g:lexima_disable_abbrev_trigger			*g:lexima_disable_abbrev_trigger*
+	By default, lexima input <C-]> to expand an abbreviation.
+	If it is 1, disable this feature.
+	default value: 0
+
 b:lexima_disabled				*b:lexima_disabled*
 	If it is 1, all of lexima rules are disabled on the buffer.
 	(local to buffer)
@@ -265,6 +270,9 @@ b:lexima_disabled				*b:lexima_disabled*
 	" Disable lexima.vim in clojure buffers
 	autocmd FileType clojure let b:lexima_disabled = 1
 
+b:lexima_disable_abbrev_trigger			*g:lexima_disable_abbrev_trigger*
+	Same as |g:lexima_disable_abbrev_trigger| but only affects the
+	specified buffer.
 
 ------------------------------------------------------------------------------
 FUNCTIONS					*lexima-functions*
