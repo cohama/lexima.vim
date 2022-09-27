@@ -255,7 +255,7 @@ g:lexima_ctrlh_as_backspace			*g:lexima_ctrlh_as_backspace*
 	default value: 0
 
 g:lexima_disable_on_nofile			*g:lexima_disable_on_nofile*
-	If it is 1, all feature of lexima.vim disabled.
+	If it is 1, all of lexima rules are disabled on buftype=nofile.
 	default value: 0
 
 g:lexima_disable_abbrev_trigger			*g:lexima_disable_abbrev_trigger*
