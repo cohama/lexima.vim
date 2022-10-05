@@ -76,6 +76,9 @@ function! lexima#cmdmode#_expand(char) abort
   let cmdline = getcmdline()
   let rule = s:find_rule(char)
   if rule == {}
+    if char == '<ESC>'
+      return lexima#string#to_inputtable('<C-C>')
+    endif
     return lexima#string#to_inputtable(char)
   else
     let final_input = ''
