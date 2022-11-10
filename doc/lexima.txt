@@ -503,13 +503,31 @@ TIPS						*lexima-tips*
 >
 	imap <C-h> <BS>
 	cmap <C-h> <BS>
+<
 
 2. <CR> (or any other) key conflicts with other plugin.
 
-You can manually remap <CR> like bellow.
+You can manually remap <CR> like bellow. Note that mapping is done at
+lexima.vim's initialization process. To be overwritten correctly, you should
+initialize lexima.vim manually as the followings.
 >
-	inoremap <CR> <Plug>(awesome-plugin-action)<C-r>=lexima#expand('CR', 'i')<CR>
+	let g:lexima_no_default_rules = 1
+	call lexima#set_default_rules()
+
+	inoremap <CR> <Plug>(awesome-plugin-action)<C-r>=lexima#expand('<CR>', 'i')<CR>
 <
+For example, if you are using ddc.vim with pum.vim and want the same behavior as
+|g:lexima_accept_pum_with_enter|, recommended setting is the following.
+>
+	inoremap <silent><expr> <CR> pum#visible() ? "\<Cmd>call pum#map#confirm()\<CR>" :
+	      \ "\<C-r>=lexima#expand('<LT>CR>', 'i')\<CR>"
+<
+Or if you are using coc.nvim,
+>
+	inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() :
+	      \ "\<C-g>u\<C-r>=lexima#expand('<LT>CR>', 'i')\<CR><C-r>=coc#on_enter()\<CR>"
+<
+
 3. <Esc> key mapping causes some problems (plugin conflicts, terminal settings, etc.)
 
 You can disable <Esc> mapping by the following.
@@ -523,6 +541,7 @@ repeat on multiline input will no longer work.
 ==============================================================================
 TODO						*lexima-todo*
 
+Avoid blinking when cmdheight=0 set on neovim.
 
 
 ==============================================================================
