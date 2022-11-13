@@ -123,9 +123,7 @@ function! s:find_rule(char)
     if rule.mode =~# 'c' || rule.mode =~# cmdtype
       if rule.char ==# a:char
         let [pre_at, post_at] = split(rule.at, '\\%#', 1)[0:1]
-        let pre_at .= '$'
-        let post_at = '^' . post_at
-        if precursor =~# pre_at && postcursor =~# post_at
+        if precursor =~# pre_at . '\m$' && match(cmdline, pre_at . post_at) >= 0
           return rule
         endif
       endif

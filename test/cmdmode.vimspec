@@ -17,9 +17,13 @@ Describe In commandline mode,
   It works well with complex regex pattern
     call lexima#add_rule({'char': '(', 'at': 'hoge\%#', 'input': '{', 'input_after': '}', 'mode': 'c'})
     call lexima#add_rule({'char': '(', 'at': 'hoge{\%#}', 'input': 'fuga', 'input_after': 'piyo', 'mode': 'c'})
+    call lexima#add_rule({'char': '$', 'at': 'hoge\%#', 'input': '$', 'input_after': '$', 'mode': 'c'})
+    call lexima#add_rule({'char': '{', 'at': '\Vhoge$\%#$', 'input': '<BS><Del>', 'mode': 'c'})
     call Expect(CmdlineInput(":(")).to_change_cmdline_as("(")
     call Expect(CmdlineInput(":hoge(")).to_change_cmdline_as("hoge{}")
     call Expect(CmdlineInput(":hoge((")).to_change_cmdline_as("hoge{fugapiyo}")
+    call Expect(CmdlineInput(":hoge$")).to_change_cmdline_as("hoge$$")
+    call Expect(CmdlineInput(":hoge${")).to_change_cmdline_as("hoge")
   End
 
   It works well when special key is input
