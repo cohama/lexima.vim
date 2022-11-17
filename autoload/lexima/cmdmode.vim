@@ -5,6 +5,8 @@ let s:L = lexima#vital().L
 
 let s:map_dict = {}
 
+let s:magic_cursor_string = '__LEXIMA_CMDLINE_CURSOR__'
+
 function! lexima#cmdmode#get_map_rules(char) abort
   let char = lexima#string#to_upper_specialkey(a:char)
   if has_key(s:map_dict, char)
@@ -113,7 +115,7 @@ function! lexima#cmdmode#_expand(char) abort
   endif
 endfunction
 
-function! s:find_rule(char)
+function! s:find_rule(char) abort
   let pos = getcmdpos()
   let cmdline = getcmdline()
   let [precursor, postcursor] = lexima#string#take_many(cmdline, pos-1)
@@ -122,8 +124,9 @@ function! s:find_rule(char)
   for rule in rules
     if rule.mode =~# 'c' || rule.mode =~# cmdtype
       if rule.char ==# a:char
-        let [pre_at, post_at] = split(rule.at, '\\%#', 1)[0:1]
-        if precursor =~# pre_at . '\m$' && match(cmdline, pre_at . post_at) >= 0
+        let rule_at = substitute(rule.at, '\\%#\|$', s:magic_cursor_string, '')
+        let cmdline_with_cursor = (precursor .. s:magic_cursor_string .. postcursor)
+        if cmdline_with_cursor =~# rule_at
           return rule
         endif
       endif
