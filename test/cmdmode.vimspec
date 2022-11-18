@@ -95,4 +95,32 @@ Describe In commandline mode,
 
   End
 
+  Context abbreviation expansion
+
+    Before each
+      cabbrev hoge fuga
+      call lexima#clear_rules()
+      call lexima#add_rule({'char': '(', 'at': '\%#', 'input': '(', 'input_after': ')', 'mode': 'c'})
+    End
+
+    After each
+      cunabbrev hoge
+      call lexima#clear_rules()
+    End
+
+    It can be triggered after key pressed
+      call Expect(CmdlineInput(':hoge ')).to_change_cmdline_as('fuga ')
+      call Expect(CmdlineInput(':hoge(')).to_change_cmdline_as('fuga()')
+      call Expect(CmdlineInput(":hoge'")).to_change_cmdline_as("fuga'")
+    End
+
+    It disabled by g:lexima_disable_abbrev_trigger
+      call Expect(CmdlineInput(':hoge(')).to_change_cmdline_as('fuga()')
+      let g:lexima_disable_abbrev_trigger = 1
+      call Expect(CmdlineInput(':hoge(')).to_change_cmdline_as('hoge()')
+      let g:lexima_disable_abbrev_trigger = 0
+    End
+
+  End
+
 End

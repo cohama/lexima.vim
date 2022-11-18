@@ -21,6 +21,14 @@ function! lexima#cmdmode#get_map_rules(char) abort
   endif
 endfunction
 
+function! lexima#cmdmode#_default_prehook(char) abort
+  if lexima#string#to_inputtable(a:char) !~ '.*\k$' && !g:lexima_disable_abbrev_trigger
+    return '<C-]>'
+  else
+    return ''
+  endif
+endfunction
+
 function! lexima#cmdmode#add_rules(rule)
   " Expect a:rule to be regularized.
   if has_key(s:map_dict, a:rule.char)
@@ -30,8 +38,8 @@ function! lexima#cmdmode#add_rules(rule)
     \ 'rules': {
     \     '_': lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order'))
     \   },
-    \ 'prehooks': [],
-    \ 'posthooks': [],
+    \ 'prehook': function('lexima#cmdmode#_default_prehook'),
+    \ 'posthook': '',
     \ }
     " Add <C-]> prehook to expand abbreviation.
     if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
@@ -74,6 +82,17 @@ endfunction
 function! lexima#cmdmode#_expand(char) abort
   let char = lexima#string#to_upper_specialkey(a:char)
   let map = s:map_dict[char]
+  let prehook = lexima#string#to_inputtable(
+  \ type(map.prehook) == v:t_func ? call(map.prehook, [a:char]) : map.prehook
+  \ )
+  let posthook = lexima#string#to_inputtable(
+  \ type(map.posthook) == v:t_func ? call(map.posthook, [a:char]) : map.posthook
+  \ )
+  return prehook .. s:input_impl(a:char) .. posthook
+endfunction
+
+function! s:input_impl(char) abort
+  let char = a:char
   let pos = getcmdpos()
   let cmdline = getcmdline()
   let rule = s:find_rule(char)
