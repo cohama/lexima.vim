@@ -88,7 +88,7 @@ function! lexima#cmdmode#_expand(char) abort
   let posthook = lexima#string#to_inputtable(
   \ type(map.posthook) == v:t_func ? call(map.posthook, [a:char]) : map.posthook
   \ )
-  return prehook .. s:input_impl(a:char) .. posthook
+  return prehook .. s:input_impl(char) .. posthook
 endfunction
 
 function! s:input_impl(char) abort
