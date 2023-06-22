@@ -123,4 +123,26 @@ Describe In commandline mode,
 
   End
 
+  Context auto mapping disabled
+
+    Before each
+      let g:lexima_disable_auto_mapping = 1
+      call lexima#clear_rules()
+      call lexima#add_rule({'char': '(', 'at': '\%#', 'input': '(', 'input_after': ')', 'mode': 'c'})
+      call lexima#add_rule({'char': '{', 'at': '\%#', 'input': '{', 'input_after': '}', 'mode': 'c'})
+    End
+
+    After each
+      let g:lexima_disable_auto_mapping = 0
+    End
+
+    It is disabled mapping when g:lexima_disable_auto_mapping = 1
+      call Expect(CmdlineInput(':hoge({')).to_change_cmdline_as('hoge({')
+      cnoremap <expr> ( lexima#expand('(', ':')
+      call Expect(CmdlineInput(':hoge({')).to_change_cmdline_as('hoge({)')
+      cnoremap <expr> { lexima#expand('{', ':')
+      call Expect(CmdlineInput(':hoge({')).to_change_cmdline_as('hoge({})')
+    End
+  End
+
 End

@@ -22,6 +22,7 @@ let g:lexima_accept_pum_with_enter = get(g:, 'lexima_accept_pum_with_enter', has
 let g:lexima_ctrlh_as_backspace = get(g:, 'lexima_ctrlh_as_backspace', 0)
 let g:lexima_disable_on_nofile = get(g:, 'lexima_disable_on_nofile', 0)
 let g:lexima_disable_abbrev_trigger = get(g:, 'lexima_disable_abbrev_trigger', 0)
+let g:lexima_disable_auto_mapping = get(g:, 'lexima_disable_auto_mapping', 0)
 
 let s:lexima_vital = {
 \ 'L' : s:L,
@@ -156,6 +157,15 @@ function! lexima#expand(char, mode) abort
   else
     throw 'lexima: Illegal `mode` parameter. (' . a:mode . ')'
   endif
+endfunction
+
+function! lexima#define_mappings() abort
+  call lexima#define_mappings_without([])
+endfunction
+
+function! lexima#define_mappings_without(ignore_chars) abort
+  call lexima#insmode#_define_mappings_without(a:ignore_chars)
+  call lexima#cmdmode#_define_mappings_without(a:ignore_chars)
 endfunction
 
 function! s:regularize(rule)

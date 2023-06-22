@@ -4,6 +4,7 @@ set cpo&vim
 let s:L = lexima#vital().L
 
 let s:map_dict = {}
+let s:auto_mapped_keys = {}
 
 let s:magic_cursor_string = '__LEXIMA_CMDLINE_CURSOR__'
 
@@ -30,10 +31,7 @@ function! lexima#cmdmode#_default_prehook(char) abort
 endfunction
 
 function! lexima#cmdmode#add_rules(rule)
-  " Expect a:rule to be regularized.
-  if has_key(s:map_dict, a:rule.char)
-    let newchar_flg = 0
-  else
+  if !has_key(s:map_dict, a:rule.char)
     let s:map_dict[a:rule.char] = {
     \ 'rules': {
     \     '_': lexima#sortedlist#new([], function('lexima#cmdmode#_priority_order'))
@@ -41,12 +39,9 @@ function! lexima#cmdmode#add_rules(rule)
     \ 'prehook': function('lexima#cmdmode#_default_prehook'),
     \ 'posthook': '',
     \ }
-    " Add <C-]> prehook to expand abbreviation.
-    if (v:version > 703 || (v:version == 703 && has('patch489'))) " old vim does not support <C-]>
-    \ && lexima#string#to_inputtable(a:rule.char) !~ '.*\k$'
-      let s:map_dict[a:rule.char].prehooks = ['<C-]>']
+    if !g:lexima_disable_auto_mapping
+      call lexima#cmdmode#_define_mapping(a:rule.char)
     endif
-    let newchar_flg = 1
   endif
   let ft_keys = empty(a:rule.filetype) ? ['_'] : a:rule.filetype
   for ft in ft_keys
@@ -55,21 +50,33 @@ function! lexima#cmdmode#add_rules(rule)
     endif
     call s:map_dict[a:rule.char].rules[ft].add(a:rule)
   endfor
-  " define imap in the last of the function in order avoid invalid mapping
-  " definition when an error occur.
-  if newchar_flg
+endfunction
+
+function! lexima#cmdmode#define_mappings_without(ignore_chars) abort
+  for char in keys(s:map_dict)
+    if index(ignore_chars, char) >= 0
+      continue
+    endif
+    call lexima#cmdmode#_define_mapping(char)
+  endif
+endfunction
+
+function! lexima#cmdmode#_define_mapping(char) abort
+  if has_key(s:map_dict, a:char)
+    let s:auto_mapped_keys[a:char] = 1
     execute printf("cnoremap <expr> %s lexima#expand(%s, ':')",
-                  \ a:rule.char,
-                  \ string(lexima#string#to_mappable(a:rule.char))
+                  \ a:char,
+                  \ string(lexima#string#to_mappable(a:char))
                   \ )
   endif
 endfunction
 
 function! lexima#cmdmode#clear_rules()
-  for c in keys(s:map_dict)
+  for c in keys(s:auto_mapped_keys)
     execute "cunmap " . c
   endfor
   let s:map_dict = {}
+  let s:auto_mapped_keys = {}
 endfunction
 
 function! lexima#cmdmode#define_altanative_key(char, mapping)

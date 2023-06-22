@@ -7,6 +7,7 @@ Describe default rule
 
   After each
     let g:lexima_disable_on_nofile = 0
+    let g:lexima_disable_auto_mapping = 0
     new | only!
   End
 
@@ -151,4 +152,3 @@ Describe default rule
   End
 
 End
-

@@ -412,4 +412,25 @@ Describe In insert mode,
 
   End
 
+  Context auto mapping disabled
+
+    Before each
+      let g:lexima_disable_auto_mapping = 1
+      call lexima#clear_rules()
+      call lexima#set_default_rules()
+    End
+
+    After each
+      let g:lexima_disable_auto_mapping = 0
+    End
+
+    It is disabled mapping when g:lexima_disable_auto_mapping = 1
+      call Expect('hoge({').to_change_input_as('hoge({')
+      inoremap <expr> ( lexima#expand('(', 'i')
+      call Expect('hoge({').to_change_input_as('hoge({)')
+      inoremap <expr> { lexima#expand('{', 'i')
+      call Expect('hoge({').to_change_input_as('hoge({})')
+    End
+  End
+
 End

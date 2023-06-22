@@ -21,6 +21,7 @@ let s:lazy_input_stack = lexima#charstack#new()  " cannot use arrow key e.g. {<C
 "   }
 " }
 let s:map_dict = {}
+let s:auto_mapped_keys = {}
 
 function! lexima#insmode#get_rules()
   return s:map_dict
@@ -60,9 +61,7 @@ endfunction
 
 function! lexima#insmode#add_rules(rule) abort
   " Expect a:rule to be regularized.
-  if has_key(s:map_dict, a:rule.char)
-    let newchar_flg = 0
-  else
+  if !has_key(s:map_dict, a:rule.char)
     let s:map_dict[a:rule.char] = {
     \ 'rules': {
     \     '_': lexima#sortedlist#new([], function('lexima#insmode#_priority_order'))
@@ -70,7 +69,9 @@ function! lexima#insmode#add_rules(rule) abort
     \ 'prehook': function('lexima#insmode#_default_prehook'),
     \ 'posthook': function('lexima#insmode#_default_posthook'),
     \ }
-    let newchar_flg = 1
+    if !g:lexima_disable_auto_mapping
+      call lexima#insmode#_define_mapping(a:rule.char)
+    endif
   endif
   let ft_keys = empty(a:rule.filetype) ? ['_'] : a:rule.filetype
   for ft in ft_keys
@@ -79,27 +80,39 @@ function! lexima#insmode#add_rules(rule) abort
     endif
     call s:map_dict[a:rule.char].rules[ft].add(a:rule)
   endfor
-  " Define imap in the last of the function in order to avoid invalid mapping
-  " definition when an error occur.
-  if newchar_flg
-    if a:rule.char == '<CR>' && g:lexima_accept_pum_with_enter
+endfunction
+
+function! lexima#insmode#_define_mappings_without(ignore_chars) abort
+  for char in keys(s:map_dict)
+    if index(ignore_chars, char) >= 0
+      continue
+    endif
+    call lexima#insmode#_define_mapping(char)
+  endfor
+endfunction
+
+function! lexima#insmode#_define_mapping(char) abort
+  if has_key(s:map_dict, a:char)
+    let s:auto_mapped_keys[a:char] = 1
+    if a:char == '<CR>' && g:lexima_accept_pum_with_enter
       execute printf("inoremap <expr><silent> %s pumvisible() ? \"\\<C-y>\" : lexima#expand(%s, 'i')",
-                    \ a:rule.char,
-                    \ string(lexima#string#to_mappable(a:rule.char))
+                    \ a:char,
+                    \ string(lexima#string#to_mappable(a:char))
                     \ )
     else
       execute printf("inoremap <expr><silent> %s lexima#expand(%s, 'i')",
-                    \ a:rule.char,
-                    \ string(lexima#string#to_mappable(a:rule.char))
+                    \ a:char,
+                    \ string(lexima#string#to_mappable(a:char))
                     \ )
     endif
   endif
 endfunction
 
 function! lexima#insmode#clear_rules()
-  for c in keys(s:map_dict)
+  for c in keys(s:auto_mapped_keys)
     execute "iunmap " . c
   endfor
+  let s:auto_mapped_keys = {}
   let s:map_dict = {}
 endfunction
 
