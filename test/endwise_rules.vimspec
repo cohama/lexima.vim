@@ -70,6 +70,7 @@ Describe endwise rule
 
     Before all
       new | setf sh
+      setlocal noexpandtab tabstop=4 shiftwidth=4
     End
 
     It should input end word
@@ -81,6 +82,7 @@ Describe endwise rule
 
     Before all
       new | setf zsh
+      setlocal noexpandtab tabstop=4 shiftwidth=4
     End
 
     It should input end word

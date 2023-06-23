@@ -115,7 +115,7 @@ Describe default rule
   End
 
   It automatically inputs pair braces with newline and set smartindent
-    setlocal smartindent
+    setlocal smartindent noexpandtab shiftwidth=4 tabstop=4
     execute "normal aHOGE({\<CR>FUGA{\<CR>PIYO{\<CR>\<Esc>"
     call Expect(['HOGE({', "\tFUGA{", "\t\tPIYO{", '',  "\t\t}", "\t}", '})']).to_be_displayed()
     setlocal smartindent&
