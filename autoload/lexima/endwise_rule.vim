@@ -32,6 +32,11 @@ function! lexima#endwise_rule#make()
   call add(rules, s:make_rule('\%(^\s*#.*\)\@<!\<\%(module\|struct\|function\|if\|for\|while\|do\|let\|macro\)\>\%(.*\<end\>\)\@!.*\%#$', 'end', 'julia', []))
   call add(rules, s:make_rule('\%(^\s*#.*\)\@<!\s*\<\%(begin\|try\|quote\)\s*\%#$', 'end', 'julia', []))
 
+  " lua
+  call add(rules, s:make_rule('\%(^\s*--.*\)\@<!\<function\>\%(.*\<end\>\)\@!.*\%#$', 'end', 'lua', []))
+  call add(rules, s:make_rule('\%(^\s*--.*\)\@<!\<do\s*\%#$', 'end', 'lua', []))
+  call add(rules, s:make_rule('\%(^\s*--.*\)\@<!\<then\s*\%#$', 'end', 'lua', []))
+
   return rules
 endfunction
 
