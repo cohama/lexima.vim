@@ -29,7 +29,6 @@ INTRODUCTION			|lexima-introduction|
 DEFAULT RULES			|lexima-default-rules|
 INTERFACE			|lexima-interface|
   VARIABLES			  |lexima-variables|
-  KEY-MAPPINGS			  |lexima-key-mappings|
   FUNCTIONS			  |lexima-functions|
 CUSTOMIZATION			|lexima-customization|
   RULES				  |lexima-rules|
