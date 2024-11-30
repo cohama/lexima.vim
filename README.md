@@ -136,6 +136,19 @@ These rules are enabled at only `latex` filetype.
 For more information, please see `:help lexima-customization`
 
 
+### SETTING EXAMPLES
+
+Same as default `(` rule but except before a word.
+
+```vim
+call lexima#add_rule({'at': '\%#\w', 'char': '(', 'input': '('})
+```
+
+    Before  Input  After
+    ----------------------------
+    |bar    (      (|bar
+
+
 DOT REPEATABLE
 --------------
 If you type `foo("bar`, you get

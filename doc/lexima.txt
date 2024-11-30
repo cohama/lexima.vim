@@ -536,6 +536,15 @@ You can disable <Esc> mapping by the following.
 Note taht this setting disables some features of lexima.vim. For example, dot
 repeat on multiline input will no longer work.
 
+4. I don't want to close paren when the cursur at the front of a word.
+>
+	call lexima#add_rule({'at': '\%#\w', 'char': '(', 'input': '('})
+<
+	Before | Input | After
+	#foo   | (     | #(foo
+
+
+
 
 ==============================================================================
 TODO						*lexima-todo*
