@@ -318,6 +318,23 @@ lexima#insmode#escape()				*lexima#insmode#escape()*
 	define |g:lexima_map_escape| accordingly.
 
 
+lexima#endwise_rule#make_rule({at}, {end}, {filetype}, {syntax})
+					*lexima#endwise_rule#make_rule()*
+	This is a utility function that can easily define endwise rule.
+	For example, auto input rule for def-end syntax in Ruby can be defained as follows.
+>
+	call lexima#add_rule(lexima#endwise_rule#make_rule(
+	\  '%sdef \w\+\%#$',
+	\  'end',
+	\  'ruby',
+	\  [],
+	\ ))
+<
+
+	This endwise rule has a predefined except rule (|lexima-rules-except|)
+	to avoid unnecessary expansion in cases where the end keyword already exists.
+	See autoload/lexima/endwise_rule.vim for except-rule details.
+
 
 ==============================================================================
 CUSTOMIZATION					*lexima-customization*
