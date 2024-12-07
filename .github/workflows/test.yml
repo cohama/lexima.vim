@@ -49,8 +49,9 @@ jobs:
       run: git clone https://github.com/thinca/vim-themis
 
     - name: Show version
-      run: ${{ matix.cmd }} --version
+      run: ${{ matrix.cmd }} --version
 
     - name: Run tests
-      env: THEMIS_VIM=${{ matrix.cmd }}
+      env:
+        THEMIS_VIM: ${{ matrix.cmd }}
       run: vim-themis/bin/themis --reporter spec
