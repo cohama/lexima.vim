@@ -1,6 +1,6 @@
 lexima.vim
 ==========
-[![Build Status](https://app.travis-ci.com/cohama/lexima.vim.svg?branch=master)](https://app.travis-ci.com/cohama/lexima.vim)
+[![test](https://github.com/cohama/lexima.vim/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/cohama/lexima.vim/actions/workflows/test.yml)
 
 Auto close parentheses and repeat by dot dot dot...
 
