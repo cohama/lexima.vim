@@ -1,0 +1,55 @@
+name: test
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+      - temp
+  pull_request:
+    branches:
+      - master
+      - dev
+      - temp
+
+jobs:
+  strategy:
+    matrix:
+      editor:
+      - Vim
+      - Neovim
+
+      os:
+      - ubuntu-24.04
+      - ubuntu-22.04
+      - ubuntu-20.04
+
+      include:
+      - editor: Vim
+        installation: ""
+        cmd: vim
+      - editor: Neovim
+        installation: sudo apt update -y && sudo apt install -y neovim
+        cmd: nvim
+
+  test:
+    name: test with ${{ matrix.editor }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install
+        run: ${{ matrix.installation }}
+          sudo apt update -y
+          sudo apt install -y neovim
+
+      - name: Install vim-themis
+        run: git clone https://github.com/thinca/vim-themis
+
+      - name: Show version
+        run: ${{ matix.cmd }} --version
+
+      - name: Run tests
+        env: THEMIS_VIM=${{ matrix.cmd }}
+        run: vim-themis/bin/themis --reporter spec
