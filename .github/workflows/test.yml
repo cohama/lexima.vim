@@ -33,7 +33,7 @@ jobs:
           installation: ""
           cmd: vim
         - editor: Neovim
-          installation: sudo apt update -y && sudo apt install -y neovim
+          installation: sudo apt-get update -y && sudo apt-get install -y neovim
           cmd: nvim
     runs-on: ${{ matrix.os }}
     steps:
@@ -42,8 +42,6 @@ jobs:
 
     - name: Install
       run: ${{ matrix.installation }}
-        sudo apt update -y
-        sudo apt install -y neovim
 
     - name: Install vim-themis
       run: git clone https://github.com/thinca/vim-themis
