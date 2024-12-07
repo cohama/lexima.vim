@@ -16,7 +16,7 @@ on:
 jobs:
 
   test:
-    name: test with ${{ matrix.editor }} on ${{ matrix.os }}
+    name: ${{ matrix.editor }} on ${{ matrix.os }}
     strategy:
       matrix:
         editor:
