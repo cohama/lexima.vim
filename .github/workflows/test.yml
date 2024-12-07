@@ -6,6 +6,7 @@ on:
       - master
       - dev
       - temp
+      - feature/githubactions
   pull_request:
     branches:
       - master
@@ -16,7 +17,6 @@ jobs:
 
   test:
     name: test with ${{ matrix.editor }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         editor:
@@ -35,6 +35,7 @@ jobs:
         - editor: Neovim
           installation: sudo apt update -y && sudo apt install -y neovim
           cmd: nvim
+    runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
