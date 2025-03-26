@@ -550,7 +550,7 @@ You can disable <Esc> mapping by the following.
 >
 	let g:lexima_map_escape = ""
 <
-Note taht this setting disables some features of lexima.vim. For example, dot
+Note that this setting disables some features of lexima.vim. For example, dot
 repeat on multiline input will no longer work.
 
 4. I don't want to close paren when the cursur at the front of a word.
