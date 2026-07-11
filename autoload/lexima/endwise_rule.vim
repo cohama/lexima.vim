@@ -11,7 +11,7 @@ function! lexima#endwise_rule#make()
   endfor
   call add(rules, lexima#endwise_rule#make_rule('^\s*export def\>.*\%#$', 'enddef', 'vim', []))
   for at in ['aug', 'augroup']
-    call add(rules, lexima#endwise_rule#make_rule('^\s*' . at . '\s\+.\+\%#$', at . ' END', 'vim', []))
+    call add(rules, lexima#endwise_rule#make_rule('^\s*' . at . '\s\+\(END\)\@!.\+\%#$', at . ' END', 'vim', []))
   endfor
 
   " ruby

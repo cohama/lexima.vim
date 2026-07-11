@@ -36,6 +36,11 @@ Describe endwise rule
     It should input enddef after export def
       call Expect("export def\<CR>").to_change_input_as("export def\n\nenddef")
     End
+
+    It should not input duplicate augroup END
+      call Expect("augroup END\<CR>").to_change_input_as("augroup END\n")
+    End
+
   End
 
   Context in ruby
