@@ -26,6 +26,7 @@ Describe In insert mode,
         call lexima#add_rule({'char': '<CR>', 'at': '{\%#}', 'input': '<CR>\<Space>', 'input_after': ',<CR>\'})
         call lexima#add_rule({'char': '<CR>', 'at': '{ \%# }', 'input': '<BS><CR>\<Space>', 'input_after': ',<CR>\', 'delete': 1})
         set ft=vim
+        let g:vim_indent_cont = shiftwidth() * 3
       End
 
       It can input correctly

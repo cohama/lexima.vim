@@ -31,6 +31,25 @@ Describe endwise rule
       call Expect("fu x()\<CR>").to_change_input_as("fu x()\n\nendfu")
       call Expect("function s:hoge(fuga)\<CR>").to_change_input_as("function s:hoge(fuga)\n\nendfunction")
       call Expect("if x ~=# '\%(ji\|\)ja;s/j'\<CR>").to_change_input_as("if x ~=# '\%(ji\|\)ja;s/j'\n\nendif")
+      call Expect("try\<CR>").to_change_input_as("try\n\nendtry")
+    End
+
+    It should not input endtry before catch
+      call append(0, ['try', 'catch', 'endtry'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('endtry\s\+catch')
+    End
+
+    It should not input endif before else
+      call append(0, ['if x', 'else', 'endif'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('endif\s\+else')
+    End
+
+    It should not input endif before elseif
+      call append(0, ['if x', 'elseif y', 'endif'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('endif\s\+elseif')
     End
 
     It should input enddef after export def
@@ -42,6 +61,7 @@ Describe endwise rule
 
     Before each
       new | setf ruby
+      let g:ruby_indent_assignment_style = 'hanging'
     End
 
     It should input end word
@@ -60,6 +80,30 @@ Describe endwise rule
       call Expect("hoge do |regex: /abc|def/| end\<CR>").to_change_input_as("hoge do |regex: /abc|def/| end\n")
       call Expect("hoge do |i| end\<CR>").to_change_input_as("hoge do |i| end\n")
     End
+
+    It should not input end before rescue after def
+      call append(0, ['def', 'rescue', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+rescue')
+    End
+
+    It should not input end before rescue after begin
+      call append(0, ['begin', 'rescue', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+rescue')
+    End
+
+    It should not input end before else
+      call append(0, ['if x', 'else', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+else')
+    End
+
+    It should not input end before elsif
+      call append(0, ['if x', 'elsif y', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+elsif')
+    End
   End
 
   function! s:shared_examples_for_shells()
@@ -70,6 +114,17 @@ Describe endwise rule
     call Expect("for x in y; do\<CR>").to_change_input_as("for x in y; do\n\ndone")
   endfunction
 
+  function! s:shared_not_before_examples_for_shells()
+    %delete _
+    call append(0, ['if true; then', 'else', 'fi'])
+    execute "normal ggA\<CR>"
+    call Expect(join(getline(1, '$'))).not.to_match('fi\s\+else')
+    %delete _
+    call append(0, ['if true; then', 'elif', 'fi'])
+    execute "normal ggA\<CR>"
+    call Expect(join(getline(1, '$'))).not.to_match('fi\s\+elif')
+  endfunction
+
   Context in sh
 
     Before all
@@ -78,7 +133,11 @@ Describe endwise rule
     End
 
     It should input end word
-        call s:shared_examples_for_shells()
+      call s:shared_examples_for_shells()
+    End
+
+    It should not input fi before else or elif
+      call s:shared_not_before_examples_for_shells()
     End
   End
 
@@ -90,7 +149,11 @@ Describe endwise rule
     End
 
     It should input end word
-        call s:shared_examples_for_shells()
+      call s:shared_examples_for_shells()
+    End
+
+    It should not input fi before else or elif
+      call s:shared_not_before_examples_for_shells()
     End
   End
 
@@ -98,6 +161,7 @@ Describe endwise rule
 
     Before all
       new | setf julia
+      setlocal formatoptions-=r
     End
 
     It should input end word
@@ -122,7 +186,24 @@ Describe endwise rule
     It should not input end word
       call Expect("x = begin y; end\<CR>").to_change_input_as("x = begin y; end\n")
       call Expect("# Yes, I do\<CR>").to_change_input_as("# Yes, I do\n")
+      " FIXME: test passes using Before all, but not when using Before each
+      " real world usage suggests this test should fail, the rule containing
+      " "let" takes precedence and an end is added after x # let's try\<CR>
       call Expect("x # let's try\<CR>").to_change_input_as("x # let's try\n")
+    End
+
+    It should not input end before else
+      %delete _ " FIXME: necessary for Before all rather than Before each
+      call append(0, ['if x', 'else', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+else')
+    End
+
+    It should not input end before elseif
+      %delete _ " FIXME: necessary for Before all rather than Before each
+      call append(0, ['if x', 'elseif y', 'end'])
+      execute "normal ggA\<CR>"
+      call Expect(join(getline(1, '$'))).not.to_match('end\s\+elseif')
     End
   End
 
